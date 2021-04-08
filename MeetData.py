@@ -5,18 +5,11 @@ from Label import label_by_length
 from InterStatistics import inter_statistic
 from SeriesStats import *
 from LogWebexManager import *
-from LogJitsiManager import webrtc_log_parse, JitsiLogdf
-
-from scipy.stats import kurtosis, skew, moment
+from LogWebrtcManager import webrtc_log_parse, webrtc_log_df
+from scipy.stats import kurtosis, skew
 import time
 import json
 
-
-
-def moment3(series):
-    return moment(series, moment=3)
-def moment4(series):
-    return moment(series, moment=4)
 
 def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, etichetto=None, label=None):
     try:
@@ -32,12 +25,12 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, etichetto=
             dict_flow_data = label_by_length(dict_flow_data, label)
 
         params = {
-            'interarrival' : ['std', 'mean', 'min', 'max', max_min_diff]+percentili,
-            'len_udp' : ['std', 'mean', 'count', kbps, max_min_diff]+percentili,
-            'interlength_udp' : ['std', 'mean', max_min_diff]+percentili,
-            'rtp_interarrival' : ['std', 'mean', zeroes_count, max_min_diff]+percentili ,
-            "rtp_marker" : [sum_check],
-            "rtp_seq_num" : [packet_loss],
+            'interarrival': ['std', 'mean', 'min', 'max', max_min_diff]+percentili,
+            'len_udp': ['std', 'mean', 'count', kbps, max_min_diff]+percentili,
+            'interlength_udp': ['std', 'mean', max_min_diff]+percentili,
+            'rtp_interarrival': ['std', 'mean', zeroes_count, max_min_diff]+percentili ,
+            "rtp_marker": [sum_check],
+            "rtp_seq_num": [packet_loss],
             #"inter_time_sequence": ['std', 'mean', max_min_diff]+percentili,
                                                                  }
         params.update(dict_params_stats)
@@ -113,25 +106,17 @@ def WebexDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggre
         df_train = WebLogdf(dict_merge, name)
         print(f"WebexDataset time:{time.time()-start} name: {name}")
         return df_train
-        # else:
-        #     #Se non abbiamo il log
-        #     dict_flow_data, dict_flow_data_2 = common(dict_flow_data, time_aggregation, {}, name, etichetto="etichetto", software=software)
-        #     dataset_dropped = pd.concat([dict_flow_data_2[key] for key in dict_flow_data_2])
-        #     dataset_dropped.dropna()
-        #     dataset_dropped.reset_index(inplace = True, drop = True)
-        #     return dataset_dropped
+
     except Exception as e:
         print('MeetData - WebexDataset: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         raise NameError("WebexDataset error")
 
 
 
-def JitsiDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation):
+def webrtcDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation):
 
     try:
-        #Notes per Gianluca: vedi se e' tutto a posto con timestamps - a volte serve come indice, a volte no
         dict_flow_data, dict_flow_data_2 = common(dict_flow_data, time_aggregation, {}, name)
-        #dict_flow_data_2[flow_id] = dict_flow_data_2[flow_id].set_index("timestamps") dopo new header credo inutile
         #Gestione del LOG
         with open(file_log, "r") as f:
             log = json.load(f)
@@ -152,14 +137,14 @@ def JitsiDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggre
             b = dict_flow_data_2[key].set_index("timestamps")
             dict_merge[key] = a_new.join(b, how="inner")
         #this returns to json2stat, it's dataset_dropped
-        df_train = JitsiLogdf(dict_merge, name)
+        df_train = webrtc_log_df(dict_merge, name)
         df_train.reset_index(drop=False, inplace=True)
 
         return df_train
 
     except Exception as e:
-        print('JitsiDataset: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        raise NameError("JitsiDataset error")
+        print('webrtcDataset: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        raise NameError("webrtcDataset error")
 
 
 

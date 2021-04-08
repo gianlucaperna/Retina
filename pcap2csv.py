@@ -16,14 +16,14 @@ def pcap_to_port(source_pcap):
     # Retrive all STUN packets
         #command = ['tshark', '-r', source_pcap, '-l', '-n', '-T', 'ek', '-Y (stun)']
         command = f"tshark -r {source_pcap} -T fields  -E separator=? -E header=n -e udp.srcport -e udp.dstport"
-        output, e = subprocess.Popen(command, stdout=subprocess.PIPE, encoding = 'utf-8', errors="ignore", shell=True).communicate()
+        output, e = subprocess.Popen(command, stdout=subprocess.PIPE, encoding='utf-8', errors="ignore", shell=True).communicate()
     except Exception as e:
-        print ("Errore in pcap_to_json: {}".format(e))
+        print("Error in pcap_to_json: {}".format(e))
         raise e
     # I've got all STUN packets: need to find which ports are used by RTP
-    used_port=set([int(x) for x in output.replace('\n','?').split('?') if x != ''])
+    used_port = set([int(x) for x in output.replace('\n','?').split('?') if x != ''])
 
-    return {"pcap" : source_pcap, "port" : list(used_port)}
+    return {"pcap": source_pcap, "port": list(used_port)}
 
 def pcap_to_csv(dict_param): #source_pcap, used_port
 
@@ -71,9 +71,9 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         print(f"Tshark time per {name}: {end - start}")
         r = o.split("\n")
         name_col = r.pop(0)
-        name_col = [e for e in name_col.split("?") if e not in ('ipv6.dst','ipv6.src')]
+        name_col = [e for e in name_col.split("?") if e not in ('ipv6.dst', 'ipv6.src')]
         del(o)
-        rr = [x.split("?")[0:12]+ list(filter(None,x.split("?")[12:16])) for x in r if '' not in x.split("?")[0:9]] #for each packet keep either IPv4 or IPv6
+        rr = [x.split("?")[0:12] + list(filter(None, x.split("?")[12:16])) for x in r if '' not in x.split("?")[0:9]] #for each packet keep either IPv4 or IPv6
         del(r)
         df = pd.DataFrame(rr, columns=name_col)
         #Take just the first Payload type of a stream CHANGE!!!!
@@ -89,42 +89,42 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
                         'rtp.marker': "int32",
                         'rtp.seq': "int32",
                    })
-        df = df.rename(columns ={
-            'frame.time_epoch' : 'timestamps',
-            'frame.number' : 'frame_num',
-            'frame.len' : "len_frame",
-            'ip.src' : 'ip_src',
-            'ip.dst' : 'ip_dst',
-            'udp.srcport' : 'prt_src',
-            'udp.dstport' : 'prt_dst',
-            'udp.length' :  'len_udp',
-            'rtp.p_type' : 'p_type',
-            'rtp.ssrc' : 'ssrc',
-            'rtp.timestamp' : 'rtp_timestamp',
-            'rtp.seq' : 'rtp_seq_num',
-            'rtp.marker' : 'rtp_marker',
-             'rtp.csrc.item' : 'rtp_csrc'
+        df = df.rename(columns={
+            'frame.time_epoch': 'timestamps',
+            'frame.number': 'frame_num',
+            'frame.len': "len_frame",
+            'ip.src': 'ip_src',
+            'ip.dst': 'ip_dst',
+            'udp.srcport': 'prt_src',
+            'udp.dstport': 'prt_dst',
+            'udp.length':  'len_udp',
+            'rtp.p_type': 'p_type',
+            'rtp.ssrc': 'ssrc',
+            'rtp.timestamp': 'rtp_timestamp',
+            'rtp.seq': 'rtp_seq_num',
+            'rtp.marker': 'rtp_marker',
+             'rtp.csrc.item': 'rtp_csrc'
                 })
-        df["rtp_csrc"].replace('',"fec", inplace=True)
+        df["rtp_csrc"].replace('', "fec", inplace=True)
 
-        if software=="webex":
-            columns=["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst" , "p_type"]
-        elif software=="skype":
-            columns=["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst"]
-        elif software=="mteams":
-            columns=["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst"]
+        if software == "webex":
+            columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst" , "p_type"]
+        elif software == "skype":
+            columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst"]
+        elif software == "mteams":
+            columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst"]
         else:
-            columns=["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst" , "p_type"]
+            columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst", "p_type"]
         gb = df.groupby(columns)
-        dict_flow_data = {x : gb.get_group(x) for x in gb.groups if x is not None and np.max(gb.get_group(x)["timestamps"]) - np.min(gb.get_group(x)["timestamps"])>time_drop}
-        df_unique_flow = pd.DataFrame(columns = columns)
+        dict_flow_data = {x: gb.get_group(x) for x in gb.groups if x is not None and np.max(gb.get_group(x)["timestamps"]) - np.min(gb.get_group(x)["timestamps"])>time_drop}
+        df_unique_flow = pd.DataFrame(columns=columns)
         for key in dict_flow_data.keys():
-            df_unique_flow=df_unique_flow.append(pd.Series(key, index=columns), ignore_index=True)
+            df_unique_flow = df_unique_flow.append(pd.Series(key, index=columns), ignore_index=True)
 
         if general_log:
             general_dict_info = {}
             for flow_id in dict_flow_data:
-                s = compute_stats(copy.deepcopy(dict_flow_data[flow_id]),flow_id, name+".pcapng")
+                s = compute_stats(copy.deepcopy(dict_flow_data[flow_id]), flow_id, name+".pcapng")
                 if s is not None:
                     general_dict_info[flow_id] = s
                     general_df=pd.DataFrame.from_dict(general_dict_info, orient='index').reset_index(drop = True)

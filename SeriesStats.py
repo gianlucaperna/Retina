@@ -6,6 +6,14 @@ Created on Sat Apr 25 15:16:19 2020
 """
 import numpy as np
 import pandas as pd
+from scipy.stats import moment
+
+
+def moment3(series):
+    return moment(series, moment=3)
+
+def moment4(series):
+    return moment(series, moment=4)
 
 def packet_loss(series):
     try:

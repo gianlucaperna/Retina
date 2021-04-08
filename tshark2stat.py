@@ -5,48 +5,51 @@ import datetime
 import os
 import traceback
 import sys
-from MeetData import WebexDataset, JitsiDataset, ZoomDataset, OtherDataset
+from MeetData import WebexDataset, webrtcDataset, ZoomDataset, OtherDataset
 import glob
 from functools import reduce
 
+
 def find_log(extension, name, file_log):
-   #file log potrebbe essere una directory padre in cui cercare
+    # file log potrebbe essere una directory padre in cui cercare
     if file_log:
-        file_log = glob.glob(reduce(os.path.join, [file_log, "**", f"{name}.{extension}"]), recursive=True) #lista che contiene in teoria solo la dir+name.log
+        file_log = glob.glob(reduce(os.path.join, [file_log, "**", f"{name}.{extension}"]),
+                            nrecursive=True)  # lista che contiene in teoria solo la dir+name.log
         if len(file_log) > 1:
-            print(f"Trovati {len(file_log)} files log con lo stesso nome, i files saranno ignorati.")
+            print(f'Found {len(file_log)} files log with the same name, they will be ignored.')
         else:
-            file_log = file_log[0]  
+            file_log = file_log[0]
         return file_log
-    else: return None
+    else:
+        return None
 
 
 def tshark_to_stat(dict_flow_data,
-              pcap_path,
-              name,
-              time_aggregation,
-              software = None,
-              file_log = None,
-              loss_rate=0.2):
+                   pcap_path,
+                   name,
+                   time_aggregation,
+                   software=None,
+                   file_log=None,
+                   loss_rate=0.2):
     try:
 
         if software == "webex":
             file_log = find_log("log", name, file_log)
-        elif software == "jitsi":
+        elif software == "webrtc":
             file_log = find_log("txt", name, file_log)
         else:
             file_log = None
 
-        #Webex with log
+        # Webex with log
         if (software == "webex") and file_log:
             dataset_dropped = WebexDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation,
                                            loss_rate=loss_rate)
             if "quality" in dataset_dropped.columns:
                 dataset_dropped["quality"].fillna("other", inplace=True)
 
-        #Jitsi with log
-        elif (software == "jitsi") and file_log:
-            dataset_dropped = JitsiDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation)
+        # webrtc with log
+        elif (software == "webrtc") and file_log:
+            dataset_dropped = webrtcDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation)
             if "quality" in dataset_dropped.columns:
                 dataset_dropped["quality"].fillna("other", inplace=True)
 
@@ -65,20 +68,20 @@ def tshark_to_stat(dict_flow_data,
 
         dataset_dropped = dataset_dropped.dropna()
         dataset_dropped = dataset_dropped.rename(columns={'label2_value_label': 'label2',
-                                'label_value_label': 'label',
-                                'len_udp_kbps': 'kbps',
-                                'len_udp_count': 'num_packets',
-                                'rtp_interarrival_std': 'rtp_inter_timestamp_std',
-                                'rtp_interarrival_mean': 'rtp_inter_timestamp_mean',
-                                'rtp_interarrival_zeroes_count': 'rtp_inter_timestamp_num_zeros',
-                                'flow_': 'flow',
-                                'pcap_': 'pcap',
-                                'timestamps_': 'timestamp',
-                                'timestamps': 'timestamp',
-                                }, errors="ignore")
+                                                          'label_value_label': 'label',
+                                                          'len_udp_kbps': 'kbps',
+                                                          'len_udp_count': 'num_packets',
+                                                          'rtp_interarrival_std': 'rtp_inter_timestamp_std',
+                                                          'rtp_interarrival_mean': 'rtp_inter_timestamp_mean',
+                                                          'rtp_interarrival_zeroes_count': 'rtp_inter_timestamp_num_zeros',
+                                                          'flow_': 'flow',
+                                                          'pcap_': 'pcap',
+                                                          'timestamps_': 'timestamp',
+                                                          'timestamps': 'timestamp',
+                                                          }, errors="ignore")
         pcap_path = os.path.join(pcap_path, name)
         with open(pcap_path + f"_{time_aggregation}s.csv", "w") as file:
-            dataset_dropped.to_csv( file, index = False)
+            dataset_dropped.to_csv(file, index=False)
         return dataset_dropped
 
     except Exception as e:

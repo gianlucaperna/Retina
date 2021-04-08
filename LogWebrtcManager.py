@@ -207,7 +207,7 @@ def webrtc_log_parse(log):
 #%%
 
 
-def JitsiLogdf(dict_merge, pcap_name):
+def webrtc_log_df(dict_merge, pcap_name):
     try:
         dict_label = {
                       "audio" : 0,
