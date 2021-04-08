@@ -11,7 +11,7 @@ import time
 import json
 
 
-def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, etichetto=None, label=None):
+def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=400, etichetto=None):
     try:
         start=time.time()
         LEN_DROP = 0
@@ -22,7 +22,9 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, etichetto=
         dict_flow_data_2 = {}
 
         if etichetto == "label_by_length":
-            dict_flow_data = label_by_length(dict_flow_data, label)
+            print("I should do label by length")
+            dict_flow_data = label_by_length(dict_flow_data, threshold)
+            # print(dict_flow_data[ ('0xf598ca5f', '192.168.1.105', '69.26.161.221', 64694, 5004, 108)][["label", "label2"]])
 
         params = {
             'interarrival': ['std', 'mean', 'min', 'max', max_min_diff]+percentili,
@@ -54,17 +56,16 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, etichetto=
         raise NameError("Common error")
     return dict_flow_data, dict_flow_data_2
 
-def OtherDataset(dict_flow_data, pcap_path, name, label, time_aggregation):
+def OtherDataset(dict_flow_data, name, time_aggregation, threshold):
     try:
         print("IM IN OTHER")
-        params={"label": [label],  "label2": [label]}
-        params={}
+        params={"label": [value_label]}
         dict_flow_data, dict_flow_data_2 = common(dict_flow_data=dict_flow_data,
                                                   time_aggregation=time_aggregation,
                                                   dict_params_stats=params,
                                                   pcap=name,
                                                   etichetto="label_by_length",
-                                                  label=label)
+                                                  threshold=threshold)
         dataset_dropped = pd.concat([dict_flow_data_2[key] for key in dict_flow_data_2.keys()])
         dataset_dropped.dropna(inplace=True)
         dataset_dropped.reset_index(inplace=True, drop=True)
@@ -74,7 +75,7 @@ def OtherDataset(dict_flow_data, pcap_path, name, label, time_aggregation):
         raise NameError("Pcap2Json error")
 
 
-def WebexDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation, loss_rate=0.2):
+def WebexDataset(dict_flow_data, name, file_log, time_aggregation, loss_rate=0.2):
     try:
         start = time.time()
         df_train = pd.DataFrame()
@@ -113,7 +114,7 @@ def WebexDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggre
 
 
 
-def webrtcDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation):
+def webrtcDataset(dict_flow_data, name, file_log, time_aggregation):
 
     try:
         dict_flow_data, dict_flow_data_2 = common(dict_flow_data, time_aggregation, {}, name)
@@ -146,10 +147,6 @@ def webrtcDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggr
         print('webrtcDataset: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         raise NameError("webrtcDataset error")
 
-
-
-def ZoomDataset(dict_flow_data, pcap_path, name, screen , quality, software, file_log):
-    pass
 
 
 

@@ -1,11 +1,6 @@
-import pandas as pd
-import numpy as np
-import json
-import datetime
 import os
-import traceback
 import sys
-from MeetData import WebexDataset, webrtcDataset, ZoomDataset, OtherDataset
+from MeetData import WebexDataset, webrtcDataset, OtherDataset
 import glob
 from functools import reduce
 
@@ -14,7 +9,7 @@ def find_log(extension, name, file_log):
     # file log potrebbe essere una directory padre in cui cercare
     if file_log:
         file_log = glob.glob(reduce(os.path.join, [file_log, "**", f"{name}.{extension}"]),
-                            nrecursive=True)  # lista che contiene in teoria solo la dir+name.log
+                            recursive=True)  # lista che contiene in teoria solo la dir+name.log
         if len(file_log) > 1:
             print(f'Found {len(file_log)} files log with the same name, they will be ignored.')
         else:
@@ -28,6 +23,7 @@ def tshark_to_stat(dict_flow_data,
                    pcap_path,
                    name,
                    time_aggregation,
+                   threshold,
                    software=None,
                    file_log=None,
                    loss_rate=0.2):
@@ -42,19 +38,19 @@ def tshark_to_stat(dict_flow_data,
 
         # Webex with log
         if (software == "webex") and file_log:
-            dataset_dropped = WebexDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation,
+            dataset_dropped = WebexDataset(dict_flow_data, name, file_log, time_aggregation,
                                            loss_rate=loss_rate)
             if "quality" in dataset_dropped.columns:
                 dataset_dropped["quality"].fillna("other", inplace=True)
 
         # webrtc with log
         elif (software == "webrtc") and file_log:
-            dataset_dropped = webrtcDataset(dict_flow_data, pcap_path, name, software, file_log, time_aggregation)
+            dataset_dropped = webrtcDataset(dict_flow_data, name, file_log, time_aggregation)
             if "quality" in dataset_dropped.columns:
                 dataset_dropped["quality"].fillna("other", inplace=True)
 
-        elif (software == "other"):
-            dataset_dropped = OtherDataset(dict_flow_data, pcap_path, name, software, time_aggregation)
+        elif (software == "other") or (file_log is None):
+            dataset_dropped = OtherDataset(dict_flow_data, name, time_aggregation, threshold)
 
         else:
             dataset_dropped = None
@@ -78,6 +74,7 @@ def tshark_to_stat(dict_flow_data,
                                                           'pcap_': 'pcap',
                                                           'timestamps_': 'timestamp',
                                                           'timestamps': 'timestamp',
+                                                          'index': 'timestamp',
                                                           }, errors="ignore")
         pcap_path = os.path.join(pcap_path, name)
         with open(pcap_path + f"_{time_aggregation}s.csv", "w") as file:
@@ -85,4 +82,4 @@ def tshark_to_stat(dict_flow_data,
         return dataset_dropped
 
     except Exception as e:
-        print('Json2Stat: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        print('tshark2stat: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)

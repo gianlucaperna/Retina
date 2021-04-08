@@ -37,6 +37,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         time_drop = dict_param["drop_len"]
         general_log = dict_param["path_general_log"]
         time_aggregation = dict_param["time_aggregation"]
+        threshold = dict_param["threshold"]
 
         # source_pcap = tuple_param[0] # path del pcap
         # used_port = tuple_param[1] #porte stun recuperate dal pcap
@@ -111,7 +112,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
             columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst" , "p_type"]
         elif software == "skype":
             columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst"]
-        elif software == "mteams":
+        elif software == "msteams":
             columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst"]
         else:
             columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst", "p_type"]
@@ -135,6 +136,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
                                         pcap_path,
                                         name,
                                         time_agg,
+                                        threshold,
                                         software=software,
                                         file_log=file_log,
                                         loss_rate=loss_rate)

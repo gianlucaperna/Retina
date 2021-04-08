@@ -69,7 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--directory", help="Master directory", required=True)
     parser.add_argument("-j", "--join", help="Join all .csv" , action='store_true')
     parser.add_argument("-p", "--plot", help="Plot info", choices=['static', 'dynamic'], default=None, type=str.lower)
-    parser.add_argument("-so", "--software", help= "Webex, Skype, M.Teams", choices=['webex', 'webrtc', 'teams', 'skype', 'other'],
+    parser.add_argument("-so", "--software", help= "webex, skype, msteams, webrtc, other", choices=['webex', 'webrtc', 'msteams', 'skype', 'other'],
                         default="other", type=str.lower)
     # parser.add_argument ("-s", "--screen", help = "Set True if in capture there is only video screen sharing", \
 	# 					action = 'store_true', default = None)
@@ -84,7 +84,8 @@ if __name__ == "__main__":
     parser.add_argument("-po", "--port", help="Add RTP port", nargs='+', type=int, default=[])
     parser.add_argument("-lr", "--loss_rate", help="Set to drop flow with greater or equal loss_rate (default 0.2)", type=float
 						,default = 0.2)
-
+    parser.add_argument("-th", "--threshold", help="Set threshold for unsupervised labelling", type=float
+                        , default=400)
     console.print("!!!!! Time Aggregation is in milliseconds !!!!! ")
     args = parser.parse_args()
 
@@ -146,6 +147,7 @@ if __name__ == "__main__":
                    "drop_len": args.drop,
                    "path_general_log": path_general_log,
                    "time_aggregation": args.time_aggregation,
+                   "threshold": args.threshold,
                    } \
                   for x in result_list]
     print(pool_dict)
