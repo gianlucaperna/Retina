@@ -6,7 +6,7 @@ import warnings
 #warnings.filterwarnings("ignore", "(?s).*MATPLOTLIBDATA.*", category=UserWarning)
 warnings.filterwarnings("error")
 from MergeCSV import merge_csv
-from Pcap2Json import pcap_to_json, pcap_to_port
+from pcap2csv import pcap_to_csv, pcap_to_port
 from split_pcap import pcap_split
 import argparse
 import os
@@ -37,7 +37,7 @@ def split_file(pool_tuple):
     new_dir_name = [os.path.join(new_dir,fs) for fs in os.listdir(new_dir)]
     result_list.append(new_dir_name)
 
-def main2(pool_tuple):
+def find_ports(pool_tuple):
         new_dir_name_file = pool_tuple[0]
         result_list = pool_tuple[1]
         dict_pcap_port = pcap_to_port(new_dir_name_file)
@@ -70,70 +70,87 @@ if __name__ == "__main__":
     parser.add_argument ("-j", "--join", help = "Join all .csv" , action='store_true')
     parser.add_argument ("-p", "--plot", help = "Plot info" , choices=['static', 'dynamic'], default=None, type=str.lower)
     parser.add_argument ("-so", "--software", help = "Webex, Skype, M.Teams", choices=['webex', 'jitsi', 'teams', 'skype', 'other'], \
-                        default = None, type = str.lower)
-    parser.add_argument ("-s", "--screen", help = "Set True if in capture there is only video screen sharing", \
-						action = 'store_true', default = None)
-    parser.add_argument ("-q", "--quality", help = "HQ if HQ video 720p, LQ low 180p, MQ medium 360p",\
-                        choices=['LQ', 'MQ', 'HQ'], default = None)
+                        default = "other", type = str.lower)
+    # parser.add_argument ("-s", "--screen", help = "Set True if in capture there is only video screen sharing", \
+	# 					action = 'store_true', default = None)
+    # parser.add_argument ("-q", "--quality", help = "HQ if HQ video 720p, LQ low 180p, MQ medium 360p",\
+    #                     choices=['LQ', 'MQ', 'HQ'], default = None)
     parser.add_argument ("-log", "--log_dir", help = "Directory logs file", default = None)
     parser.add_argument ("-sp", "--split", help = "Set to divide pcap", type=int\
 						,default = None)
     parser.add_argument ("-dp", "--drop", help = "Minimum length in time of the flow", type=int, default = 10)
     parser.add_argument ("-gl", "--general_log", help = "General log for flows, like Tstat", action='store_true', default = False)
     parser.add_argument ("-ta", "--time_aggregation", help = "time window aggregation", nargs='+', type=int, default=[1])
-    parser.add_argument ("-l", "--label", help = "Webex, Skype, M.Teams", default = None, type = str.lower)
+    # parser.add_argument ("-l", "--label", help = "Webex, Skype, M.Teams", default = None, type = str.lower)
     parser.add_argument ("-po", "--port", help = "Add RTP port", nargs='+', type=int, default=[])
-    parser.add_argument ("-lr", "--loss_rate", help = "Set to drop flow with geq loss_rate (default 0.2)", type=float\
+    parser.add_argument ("-lr", "--loss_rate", help = "Set to drop flow with greater or equal loss_rate (default 0.2)", type=float\
 						,default = 0.2)
-    #aggiungere parametro per tempo aggregazione
+
     console.print("!!!!! Time Aggregation is in milliseconds !!!!! ")
     args = parser.parse_args()
+
+    #Handle the directory of pcaps
     directory_p = args.directory
     pcap_app = recursive_files(directory_p)
     if (pcap_app == -1):
-    	raise "File inserito non valido"
+    	raise "Inserted file not valid"
+
+    #Set number of processes as number of pcaps
     n_process = set_n_process (pcap_app)
     table = Table(show_header=True, header_style="bold magenta", box=box.HORIZONTALS, show_footer=True )
-    table.add_column("Pcap to elaborate:", justify="center", footer=f"[bold magenta]N. worker:[/] [cornflower_blue bold]{n_process}[/], [bold magenta]PID main:[/bold magenta] [cornflower_blue bold]{os.getpid()}[/]")
+    table.add_column("Pcap(s) to elaborate:", justify="center", footer=f"[bold magenta]N. worker:[/] [cornflower_blue bold]{n_process}[/], [bold magenta]PID main:[/bold magenta] [cornflower_blue bold]{os.getpid()}[/]")
     for i in pcap_app: table.add_row(i, style="cornflower_blue bold")
     console.print(table)
+
     #For each .pcap in the folders, do the process
     manager = multiprocessing.Manager()
     result_list = manager.list()
-    #log simile a tstat
+    #creation of general log
     if args.general_log:
         OUTDIR = "logs"
         if os.path.isdir(directory_p):
             path_general_log = os.path.join(directory_p, OUTDIR)
         else:
             path_general_log = os.path.join(os.path.dirname(directory_p), OUTDIR)
-        #print(f"path {os.path.isdir(path_general_log)}")
         if not os.path.isdir(path_general_log):
             os.makedirs(path_general_log)
     else:
         path_general_log = False
 
-    #Splitto i pcap
+    #Splitting the pcap files
     if args.split is not None:
-    	pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1, ) #Limito il numero di processi ai core della cpu -1
+    	pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1, )
     	pool_tuple = [(x, args.split, result_list) for x in pcap_app]
     	pool.imap_unordered(split_file, pool_tuple, chunksize=1)
     	pool.close()
     	pool.join()
     	pcap_app = [j for i in result_list for j in i]
     	result_list[:] = []
-    #Cerco le porte
-    pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1, ) #Limito il numero di processi ai core della cpu -1
+
+    #Find the RTP ports
+    pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1, )
     pool_tuple = [(x, result_list) for x in pcap_app]
-    pool.imap_unordered(main2, pool_tuple, chunksize=1)
+    pool.imap_unordered(find_ports, pool_tuple, chunksize=1)
     pool.close()
     pool.join()
 
-    #Decodifico su porta e creo .csv
-    pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1,) #Limito il numero di processi ai core della cpu -1
-    pool_tuple = [(x["pcap"], x["port"]+args.port, args.screen, args.quality, args.plot, args.loss_rate, args.software, args.log_dir, \
-                  args.drop, path_general_log, args.time_aggregation, args.label) for x in result_list]  #result_list, args.plot
-    pool.imap_unordered(pcap_to_json, pool_tuple, chunksize=1)
+    #Main
+    #Decode RTP traffic according to ports and create the aggregation .csv files
+    pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1,)
+
+    pool_dict = [{"pcap": x["pcap"],
+                   "port": x["port"]+args.port,
+                   "plot": args.plot,
+                   "loss_rate": args.loss_rate,
+                   "software": args.software,
+                   "log_dir": args.log_dir,
+                   "drop_len": args.drop,
+                   "path_general_log": path_general_log,
+                   "time_aggregation": args.time_aggregation,
+                   } \
+                  for x in result_list]
+    print(pool_dict)
+    pool.imap_unordered(pcap_to_csv, pool_dict, chunksize=1)
     pool.close()
     pool.join()
 
@@ -141,3 +158,5 @@ if __name__ == "__main__":
     if (args.join):
         for time_agg in args.time_aggregation:
     	    merge_csv(directory_p, time_agg)
+
+    print("IM DONE")

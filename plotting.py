@@ -90,8 +90,9 @@ def label_for_plotting(dataset_dropped):
             main_label = dataset_dropped[dataset_dropped["flow"] == flow]["label"].value_counts().index[0]
             flow_label[make_tuple(flow)] = dict_label[main_label]
         except Exception as e:
-            print("Error in flow_label.")
-    
+            print('Plotting - Error in flow_label: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+            raise NameError("Plotting error")
+
     return flow_label
 
 
