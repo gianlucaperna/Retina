@@ -50,7 +50,7 @@ def recursive_files(directory_p):
         if last_path.split(".")[1] in "pcapng":
             return [directory_p] #torno il file su cui lavorare
         else:
-            return -1 #ritorno errore
+            return -1 # ritorno errore
     else:
         for r, d, f in os.walk(directory_p):
             for file in f:
@@ -75,15 +75,14 @@ if __name__ == "__main__":
 	# 					action = 'store_true', default = None)
     # parser.add_argument ("-q", "--quality", help = "HQ if HQ video 720p, LQ low 180p, MQ medium 360p",\
     #                     choices=['LQ', 'MQ', 'HQ'], default = None)
-    parser.add_argument("-log", "--log_dir", help = "Directory logs file", default = None)
-    parser.add_argument("-sp", "--split", help = "Set to divide pcap", type=int\
+    parser.add_argument("-log", "--log_dir", help="Directory logs file", default=None)
+    parser.add_argument("-sp", "--split", help="Set to divide pcap", type=int
 						,default = None)
     parser.add_argument("-dp", "--drop", help = "Minimum length in time of the flow", type=int, default = 10)
-    parser.add_argument("-gl", "--general_log", help = "General log for flows, like Tstat", action='store_true', default = False)
-    parser.add_argument("-ta", "--time_aggregation", help = "time window aggregation", nargs='+', type=int, default=[1])
-    # parser.add_argument ("-l", "--label", help = "Webex, Skype, M.Teams", default = None, type = str.lower)
-    parser.add_argument("-po", "--port", help = "Add RTP port", nargs='+', type=int, default=[])
-    parser.add_argument("-lr", "--loss_rate", help = "Set to drop flow with greater or equal loss_rate (default 0.2)", type=float\
+    parser.add_argument("-gl", "--general_log", help="General log for flows, like Tstat", action='store_true', default = False)
+    parser.add_argument("-ta", "--time_aggregation", help="time window aggregation", nargs='+', type=int, default=[1])
+    parser.add_argument("-po", "--port", help="Add RTP port", nargs='+', type=int, default=[])
+    parser.add_argument("-lr", "--loss_rate", help="Set to drop flow with greater or equal loss_rate (default 0.2)", type=float
 						,default = 0.2)
 
     console.print("!!!!! Time Aggregation is in milliseconds !!!!! ")
@@ -93,7 +92,7 @@ if __name__ == "__main__":
     directory_p = args.directory
     pcap_app = recursive_files(directory_p)
     if (pcap_app == -1):
-    	raise "Inserted file not valid"
+    	raise NameError("Inserted file not valid")
 
     #Set number of processes as number of pcaps
     n_process = set_n_process (pcap_app)
