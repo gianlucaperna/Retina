@@ -33,7 +33,7 @@ def split_file(pool_tuple):
     result_list = pool_tuple[2]
     name = os.path.basename(source_pcap).split(".")[0]
     pcap_path = os.path.dirname(source_pcap)
-    new_dir = pcap_split (num_packets,source_pcap, pcap_path, name)
+    new_dir = pcap_split(num_packets,source_pcap, pcap_path, name)
     new_dir_name = [os.path.join(new_dir,fs) for fs in os.listdir(new_dir)]
     result_list.append(new_dir_name)
 
