@@ -54,6 +54,27 @@ def value_label(series):
     except:
         pass
 
+def csrc_agg(series):
+    # print("series: ", series)
+    l = series.dropna().unique()
+    l2 = []
+    for el in l:
+        for i in el.split(","):
+            l2.append(i)
+
+    value = list(set(l2))
+    # print(len(value))
+    # print(value)
+    if not value:
+        return "-"
+    if len(value) == 1:
+        if value[0] == "":
+            return "-"
+        else:
+            return value[0]
+    else:
+        return value
+
 
 def p10(x):
     return (x.quantile(0.10)* 0.01)

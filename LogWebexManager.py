@@ -130,12 +130,17 @@ def DictMerge(dict_flow_data_2, d_log, fec_dict):
                 elif key in fec_dict.keys():
                     #This shouldn't happen, but just for protection
                     if len(fec_dict[key]) == 0:
-                        print("No flow with same groupID: ", key)
+                        # print("No flow with same groupID: ", key)
+                        pass
 
                     elif len(fec_dict[key]) == 1:
-                        dict_merge[key] = pd.merge( dict_flow_data_2[key], d_log[fec_dict[key][0]], left_on = "timestamps", right_on = "timestamps", how = "left" ).fillna(method="ffill").fillna(method="bfill")
-                        if "fps" in dict_merge[key].columns: dict_merge[key].drop(["fps", "jitter"], axis=1, inplace=True)
-                        dict_merge[key]["label"] = dict_merge[key]["label"].apply(lambda x: "FEC-"+x)
+                        # print("fec_dict[key]", fec_dict[key])
+                        # print(type(d_log[fec_dict[key][0]]))
+                        if not d_log[fec_dict[key][0]].empty:
+                            dict_merge[key] = pd.merge( dict_flow_data_2[key], d_log[fec_dict[key][0]], left_on="timestamps", right_on="timestamps", how="left" ).fillna(method="ffill").fillna(method="bfill")
+                            if "fps" in dict_merge[key].columns:
+                                dict_merge[key].drop(["fps", "jitter"], axis=1, inplace=True)
+                            dict_merge[key]["label"] = dict_merge[key]["label"].apply(lambda x: "FEC-"+x)
                     else:
                         for item in fec_dict[key]:
                             if len(d_log[item]):
@@ -150,7 +155,8 @@ def DictMerge(dict_flow_data_2, d_log, fec_dict):
                 else:
                     flows_not_in_log.append(key)
             except Exception as e:
-                print('DictMerge: Errore non bloccante on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+                print('LogWebexManager - DictMerge: Non-blocking error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+                print(d_log[fec_dict[key][0]])
             try:
                 dict_merge[key].dropna(inplace=True)
             except:

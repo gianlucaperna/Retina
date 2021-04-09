@@ -86,6 +86,7 @@ if __name__ == "__main__":
 						,default = 0.2)
     parser.add_argument("-th", "--threshold", help="Set threshold for unsupervised labelling", type=float
                         , default=400)
+    # parser.add_argument("-pt", "--payload_type", help="Should I consider Payload Type in RTP stream tuple", action='store_true', default=False)
     console.print("!!!!! Time Aggregation is in milliseconds !!!!! ")
     args = parser.parse_args()
 

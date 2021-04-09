@@ -30,6 +30,7 @@ def tshark_to_stat(dict_flow_data,
     try:
 
         if software == "webex":
+            print(name)
             file_log = find_log("log", name, file_log)
         elif software == "webrtc":
             file_log = find_log("txt", name, file_log)
@@ -76,6 +77,18 @@ def tshark_to_stat(dict_flow_data,
                                                           'timestamps': 'timestamp',
                                                           'index': 'timestamp',
                                                           }, errors="ignore")
+
+        dataset_dropped["flow"] = dataset_dropped["flow"].apply(eval)
+        if "flow" in dataset_dropped.columns:
+            if len(dataset_dropped["flow"].iloc[0]) == 6:
+                dataset_dropped["ssrc"], dataset_dropped["ip_src"], dataset_dropped["ip_dst"], dataset_dropped["prt_src"], dataset_dropped["prt_dst"], dataset_dropped["p_type"] = \
+                    zip(*dataset_dropped["flow"])
+            elif len(dataset_dropped["flow"].iloc[0]) == 5:
+                dataset_dropped["ssrc"], dataset_dropped["ip_src"], dataset_dropped["ip_dst"], dataset_dropped["prt_src"], dataset_dropped["prt_dst"] = \
+                    zip(*dataset_dropped["flow"])
+            else:
+                pass
+
         pcap_path = os.path.join(pcap_path, name)
         with open(pcap_path + f"_{time_aggregation}s.csv", "w") as file:
             dataset_dropped.to_csv(file, index=False)

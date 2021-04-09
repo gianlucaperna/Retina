@@ -77,7 +77,8 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         rr = [x.split("?")[0:12] + list(filter(None, x.split("?")[12:16])) for x in r if '' not in x.split("?")[0:9]] #for each packet keep either IPv4 or IPv6
         del(r)
         df = pd.DataFrame(rr, columns=name_col)
-        #Take just the first Payload type of a stream CHANGE!!!!
+
+        df.to_csv("df_from_tshark.csv", sep="?")
         df['rtp.p_type']=df['rtp.p_type'].apply(lambda x: x.split(",")[0])
         df = df.astype({'frame.time_epoch': 'float64',
                         'frame.number': "int32",
@@ -106,7 +107,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
             'rtp.marker': 'rtp_marker',
              'rtp.csrc.item': 'rtp_csrc'
                 })
-        df["rtp_csrc"].replace('', "fec", inplace=True)
+        # df["rtp_csrc"].replace('', "fec", inplace=True)
 
         if software == "webex":
             columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst" , "p_type"]
@@ -116,11 +117,16 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
             columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst"]
         else:
             columns = ["ssrc", "ip_src", "ip_dst", "prt_src", "prt_dst", "p_type"]
+
         gb = df.groupby(columns)
         dict_flow_data = {x: gb.get_group(x) for x in gb.groups if x is not None and np.max(gb.get_group(x)["timestamps"]) - np.min(gb.get_group(x)["timestamps"])>time_drop}
+        # print(dict_flow_data[('0x0000f15c', '40.66.119.10', '192.168.1.14', 3480, 25910)]["rtp_csrc"])
         df_unique_flow = pd.DataFrame(columns=columns)
         for key in dict_flow_data.keys():
             df_unique_flow = df_unique_flow.append(pd.Series(key, index=columns), ignore_index=True)
+
+        # print(dict_flow_data)
+        # print(dict_flow_data[('0x0000f15c', '40.66.119.10', '192.168.1.14', 3480, 25910)]["rtp_csrc"])
 
         if general_log:
             general_dict_info = {}

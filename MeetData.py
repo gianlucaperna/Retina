@@ -9,38 +9,41 @@ from LogWebrtcManager import webrtc_log_parse, webrtc_log_df
 from scipy.stats import kurtosis, skew
 import time
 import json
+from collections import defaultdict
+
+from config import config_dict
 
 
 def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=400, etichetto=None):
     try:
+
+        config_dict_new = defaultdict(list)
+        for key, value in config_dict.items():
+            for element in value:
+                if element not in ['std', 'mean', 'min', 'max', "count"]:
+                    config_dict_new[key].append(eval(element))
+                else:
+                    config_dict_new[key].append(element)
+
+        print(config_dict_new)
+
         start=time.time()
         LEN_DROP = 0
-       # start = len(dict_flow_data.keys())
+
         dict_flow_data, LEN_DROP = inter_statistic (dict_flow_data, LEN_DROP)
-        percentili = [p10, p20, p25, p30, p40, p50, p60, p70, p75, p80, p90, p95, max_min_R, kurtosis, skew,
-            moment3, moment4, len_unique_percent, max_value_count_percent, min_max_R]
         dict_flow_data_2 = {}
 
         if etichetto == "label_by_length":
-            print("I should do label by length")
+            print(f"I am labelling audio and video by length of packet: {threshold}")
             dict_flow_data = label_by_length(dict_flow_data, threshold)
-            # print(dict_flow_data[ ('0xf598ca5f', '192.168.1.105', '69.26.161.221', 64694, 5004, 108)][["label", "label2"]])
 
-        params = {
-            'interarrival': ['std', 'mean', 'min', 'max', max_min_diff]+percentili,
-            'len_udp': ['std', 'mean', 'count', kbps, max_min_diff]+percentili,
-            'interlength_udp': ['std', 'mean', max_min_diff]+percentili,
-            'rtp_interarrival': ['std', 'mean', zeroes_count, max_min_diff]+percentili ,
-            "rtp_marker": [sum_check],
-            "rtp_seq_num": [packet_loss],
-            #"inter_time_sequence": ['std', 'mean', max_min_diff]+percentili,
-                                                                 }
-        params.update(dict_params_stats)
+
         for flow_id in dict_flow_data.keys():
+
             dict_flow_data[flow_id]["timestamps"] = pd.to_datetime(dict_flow_data[flow_id]["timestamps"], unit = 's')
             dict_flow_data[flow_id].set_index('timestamps', inplace = True)
-            dict_flow_data[flow_id] = dict_flow_data[flow_id].dropna() 
-            dict_flow_data_2[flow_id] = dict_flow_data[flow_id].resample(f"{time_aggregation}L").agg(params)
+            dict_flow_data[flow_id] = dict_flow_data[flow_id].dropna()
+            dict_flow_data_2[flow_id] = dict_flow_data[flow_id].resample(f"{time_aggregation}L").agg(config_dict_new)
             dict_flow_data_2[flow_id]["flow"]=str(flow_id)
             dict_flow_data_2[flow_id]["pcap"]=str(pcap)
 
