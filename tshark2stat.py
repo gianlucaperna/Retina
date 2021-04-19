@@ -7,9 +7,10 @@ from functools import reduce
 
 def find_log(extension, name, file_log):
     # file log potrebbe essere una directory padre in cui cercare
+
     if file_log:
-        file_log = glob.glob(reduce(os.path.join, [file_log, "**", f"{name}.{extension}"]),
-                            recursive=True)  # lista che contiene in teoria solo la dir+name.log
+        file_log = glob.glob(os.path.join(file_log, "**", f"{name}.{extension}"), recursive=True)  # lista che contiene in teoria solo la dir+name.log
+        print("FILE_LOG: ", file_log)
         if len(file_log) > 1:
             print(f'Found {len(file_log)} files log with the same name, they will be ignored.')
         else:
@@ -24,16 +25,20 @@ def tshark_to_stat(dict_flow_data,
                    name,
                    time_aggregation,
                    threshold,
+                   pcap_original_name,
                    software=None,
                    file_log=None,
                    loss_rate=0.2):
     try:
+        print("PCAP ORIGINAL NAME", pcap_original_name)
+        if not pcap_original_name:
+            pcap_original_name = name
 
         if software == "webex":
-            print(name)
-            file_log = find_log("log", name, file_log)
+            print("NAME", name, "PCAP_ORIGINAL_NAME", pcap_original_name)
+            file_log = find_log("log", pcap_original_name, file_log)
         elif software == "webrtc":
-            file_log = find_log("txt", name, file_log)
+            file_log = find_log("txt", pcap_original_name, file_log)
         else:
             file_log = None
 
@@ -78,8 +83,8 @@ def tshark_to_stat(dict_flow_data,
                                                           'index': 'timestamp',
                                                           }, errors="ignore")
 
-        dataset_dropped["flow"] = dataset_dropped["flow"].apply(eval)
         if "flow" in dataset_dropped.columns:
+            dataset_dropped["flow"] = dataset_dropped["flow"].apply(eval)
             if len(dataset_dropped["flow"].iloc[0]) == 6:
                 dataset_dropped["ssrc"], dataset_dropped["ip_src"], dataset_dropped["ip_dst"], dataset_dropped["prt_src"], dataset_dropped["prt_dst"], dataset_dropped["p_type"] = \
                     zip(*dataset_dropped["flow"])

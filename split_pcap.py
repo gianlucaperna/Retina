@@ -5,8 +5,9 @@ def pcap_split(num_packets,source_pcap, pcap_path, name):
     new_dir = os.path.join(pcap_path, name+"_split")
     if not os.path.exists(new_dir):
         os.makedirs(new_dir)
-    command = ['editcap', '-c', str(num_packets), source_pcap, os.path.join(new_dir,name+".pcapng") ]
-    #print(command)
+    print("Source pcap: ", source_pcap)
+    command = ['editcap', '-c', str(num_packets), source_pcap, os.path.join(new_dir, name+".pcapng") ]
+    print("NAME IN PCAP_SPLIT", name)
     try:
         process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding = 'utf-8', shell=False )
     except Exception as e:

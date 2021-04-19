@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+
+import socket
+import dpkt
+import sys
+import io
+
+# Source: https://support.zoom.us/hc/en-us/articles/201362683-Network-Firewall-or-Proxy-Server-Settings-for-Zoom
+UDP_PORTS = {3478, 3479, 5090, 8801, 8802, 8803, 8804, 8805, 8806, 8807, 8808, 8809, 8810}
+
+# Source: https://citizenlab.ca/2020/04/move-fast-roll-your-own-crypto-a-quick-look-at-the-confidentiality-of-zoom-meetings/
+VIDEO_MAGIC = bytes.fromhex("05100100")
+AUDIO_MAGIC = bytes.fromhex("050f0100")
+OTHER_MAGIC = bytes.fromhex("050d")
+BEDE_MAGIC  = bytes.fromhex("bede")
+MAGIC_LEN = 4
+
+# Parameters
+TRIM_LEN_AUDIO = 20
+TRIM_LEN_VIDEO = 21
+START_PROBE_LEN = 10
+
+# Print help
+if ( len(sys.argv) == 2 and sys.argv[1] == '-h' ) or ( sys.stdin.isatty() and len(sys.argv) == 1 ):
+    print('''\
+Zoom Pcap Cleaner 1.0 -- Martino Trevisan (martino.trevisan@polito.it)
+Clean a capture file to make Zoom RTP flows look like standard ones.
+Usage: zoom_pcap_cleaner [infile] [outfile]
+    If outfile is omitted, print on the standard output.
+    If infile is omitted, read from the standard input.''')
+    exit()
+
+# Get Args
+IN_STREAM  = open(sys.argv[1], 'rb') if len(sys.argv) >= 2 else sys.stdin.buffer
+OUT_STREAM = open(sys.argv[2], 'wb') if len(sys.argv) >= 3 else sys.stdout.buffer
+
+# Function to print addresses
+def inet_to_str(inet):
+    try:
+        return socket.inet_ntop(socket.AF_INET, inet)
+    except ValueError:
+        return socket.inet_ntop(socket.AF_INET6, inet)
+
+# Try Pcap and PcapNG
+probe = io.BytesIO(IN_STREAM.peek(START_PROBE_LEN))
+try:
+    pcap        = dpkt.pcap.Reader(probe)
+    pcap        = dpkt.pcap.Reader(IN_STREAM)
+except ValueError:
+    pcap        = dpkt.pcapng.Reader(IN_STREAM)
+
+output_file = dpkt.pcap.Writer(OUT_STREAM)
+
+# Stats
+zoom_streams = set()
+tot_pkt = 0
+zoom_pkt = 0
+
+# Iterate over packets
+for ts, buf in pcap:
+    eth = dpkt.ethernet.Ethernet(buf)
+    
+    # Check IPv4 or IPv6
+    if isinstance(eth.data, dpkt.ip.IP) or isinstance(eth.data, dpkt.ip6.IP6):
+        ip = eth.data
+
+        # Check UDP
+        if isinstance(ip.data, dpkt.udp.UDP):
+            udp = ip.data
+
+            # Check ports
+            if udp.sport in UDP_PORTS or udp.dport in UDP_PORTS and type(udp.data) == bytes:
+
+                # Check Magic
+                first_bytes = udp.data[:MAGIC_LEN]
+                zoom_type = None
+                if first_bytes == AUDIO_MAGIC:
+                    zoom_type = "audio"
+                    trim = TRIM_LEN_AUDIO
+                elif first_bytes == VIDEO_MAGIC:
+                    zoom_type = "video"
+                    trim = TRIM_LEN_VIDEO
+                else:
+                    # Identify some flows by the RTP extensions field
+                    if udp.data[:2] == OTHER_MAGIC and udp.data[39:41] == BEDE_MAGIC :
+                        zoom_type = "other"
+                        trim = 27
+                    elif udp.data[:2] == OTHER_MAGIC and udp.data[43:45] == BEDE_MAGIC :
+                        zoom_type = "other"
+                        trim = 31
+
+                # It is zoom
+                if zoom_type is not None:
+                    tup = (ip.src, ip.dst, udp.sport, udp.dport, zoom_type)
+                    zoom_pkt += 1
+
+                    # Check if in set
+                    if not tup in zoom_streams:
+                        print ("Zoom {} flow detected: {}:{} -> {}:{}".format(
+                            zoom_type, inet_to_str(ip.src), udp.sport, inet_to_str(ip.dst), udp.dport),
+                            file = sys.stderr)
+                        zoom_streams.add(tup)
+
+                    # Shorten data
+                    udp.ulen -= trim
+                    new_data = udp.data[trim:]
+                    udp.data = bytes(new_data)
+
+    tot_pkt += 1
+    output_file.writepkt(eth, ts)
+
+print("Total packets: {}, Zoom RTP packets: {}".format(tot_pkt, zoom_pkt), file = sys.stderr)

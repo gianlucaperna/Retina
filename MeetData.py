@@ -25,8 +25,6 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=
                 else:
                     config_dict_new[key].append(element)
 
-        print(config_dict_new)
-
         start=time.time()
         LEN_DROP = 0
 
@@ -61,7 +59,6 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=
 
 def OtherDataset(dict_flow_data, name, time_aggregation, threshold):
     try:
-        print("IM IN OTHER")
         params={"label": [value_label]}
         dict_flow_data, dict_flow_data_2 = common(dict_flow_data=dict_flow_data,
                                                   time_aggregation=time_aggregation,

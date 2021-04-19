@@ -11,6 +11,25 @@ import sys
 import numpy as np
 import time
 
+def clean_pcap(tool, path_pcap):
+
+    name_pcap = os.path.basename(path_pcap) #3_p.pcapng
+    new_pcap_path = os.path.join(os.path.dirname(path_pcap), name_pcap.split(".pcap")[0] + "_clean.pcapng")
+    print("name_pcap", name_pcap)
+    print("new_pcap_path", new_pcap_path)
+    try:
+        if tool == "msteams":
+            command = f"./pcap_cleaners/teams_pcap_cleaner {path_pcap} {new_pcap_path}"
+        else:
+            command = f"./pcap_cleaners/zoom_pcap_cleaner {path_pcap} {new_pcap_path}"
+        output, e = subprocess.Popen(command, stdout=subprocess.PIPE, encoding='utf-8', errors="ignore", shell=True).communicate()
+    except Exception as e:
+        print("Error in pcap2csv - clean_pcap: {}".format(e))
+        raise e
+
+    return new_pcap_path
+
+
 def pcap_to_port(source_pcap):
     try:
     # Retrive all STUN packets
@@ -29,7 +48,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
 
     try:
         source_pcap = dict_param["pcap"] #path of the pcap
-        used_port = dict_param["port"]
+        used_port = dict_param["port"] #ports read from the pcap
         plot = dict_param["plot"]
         loss_rate = dict_param["loss_rate"]
         software = dict_param["software"]
@@ -38,6 +57,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         general_log = dict_param["path_general_log"]
         time_aggregation = dict_param["time_aggregation"]
         threshold = dict_param["threshold"]
+        pcap_original_name = dict_param["pcap_original_name"]
 
         # source_pcap = tuple_param[0] # path del pcap
         # used_port = tuple_param[1] #porte stun recuperate dal pcap
@@ -52,11 +72,15 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         # time_aggregation = tuple_param[10]
         # label = tuple_param[11]
 
+        if software == "msteams" or software == "zoom":
+            source_pcap = clean_pcap(tool=software, path_pcap=source_pcap)
+            print("I have cleaned the pcap.")
+            print(source_pcap)
+
         name = os.path.basename(source_pcap).split(".")[0] # name of the pcap without extension
         pcap_path = os.path.dirname(source_pcap) #folder where pcap is
         filtro = "rtp.version==2"
         port_add = []
-        print(source_pcap)
         for port in used_port:
             port_add.append("-d udp.port==" + str(port) + ",rtp")
 
@@ -79,7 +103,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         df = pd.DataFrame(rr, columns=name_col)
 
         df.to_csv("df_from_tshark.csv", sep="?")
-        df['rtp.p_type']=df['rtp.p_type'].apply(lambda x: x.split(",")[0])
+        df['rtp.p_type'] = df['rtp.p_type'].apply(lambda x: x.split(",")[0])
         df = df.astype({'frame.time_epoch': 'float64',
                         'frame.number': "int32",
                         'frame.len': "int32",
@@ -143,6 +167,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
                                         name,
                                         time_agg,
                                         threshold,
+                                        pcap_original_name,
                                         software=software,
                                         file_log=file_log,
                                         loss_rate=loss_rate)
@@ -157,6 +182,6 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         #end2=time.time()
         #print(f"General Time per name: {end2 - end} - {end2-start}")
     except Exception as e:
-        print('Pcap2Json: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        raise NameError("Pcap2Json error")
+        print('pcap2csv - pcap_to_csv: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+        raise NameError("pcap2csv - pcap_to_csv error")
     return

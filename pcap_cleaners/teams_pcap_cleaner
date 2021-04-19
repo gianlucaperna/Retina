@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+
+import socket
+import dpkt
+import sys
+import io
+
+# Source: Microsoft Teams UDP ports
+UDP_PORTS = {3478, 3479, 3480, 3481}
+
+# MTURN magic
+MTURN_MAGIC = bytes.fromhex("ff10")
+MAGIC_LEN = 2
+
+# Parameters
+TRIM_LEN = 12
+START_PROBE_LEN = 10
+
+# Print help
+if ( len(sys.argv) == 2 and sys.argv[1] == '-h' ) or ( sys.stdin.isatty() and len(sys.argv) == 1 ):
+    print('''\
+Teams Pcap Cleaner 1.0 -- Maurizio Munafo' and Martino Trevisan (martino.trevisan@polito.it)
+Clean a capture file to make Teams MTURN RTP/RTCP flows look like standard ones.
+Usage: teams_pcap_cleaner [infile] [outfile]
+    If outfile is omitted, print on the standard output.
+    If infile is omitted, read from the standard input.''')
+    exit()
+
+# Get Args
+IN_STREAM  = open(sys.argv[1], 'rb') if len(sys.argv) >= 2 else sys.stdin.buffer
+OUT_STREAM = open(sys.argv[2], 'wb') if len(sys.argv) >= 3 else sys.stdout.buffer
+
+# Function to print addresses
+def inet_to_str(inet):
+    try:
+        return socket.inet_ntop(socket.AF_INET, inet)
+    except ValueError:
+        return socket.inet_ntop(socket.AF_INET6, inet)
+
+# Try Pcap and PcapNG
+probe = io.BytesIO(IN_STREAM.peek(START_PROBE_LEN))
+try:
+    pcap        = dpkt.pcap.Reader(probe)
+    pcap        = dpkt.pcap.Reader(IN_STREAM)
+except ValueError:
+    pcap        = dpkt.pcapng.Reader(IN_STREAM)
+
+output_file = dpkt.pcap.Writer(OUT_STREAM)
+
+# Stats
+mteams_streams = set()
+tot_pkt = 0
+mteams_pkt = 0
+
+# Iterate over packets
+for ts, buf in pcap:
+    eth = dpkt.ethernet.Ethernet(buf)
+    
+    # Check IPv4 or IPv6
+    if isinstance(eth.data, dpkt.ip.IP) or isinstance(eth.data, dpkt.ip6.IP6):
+        ip = eth.data
+
+        # Check UDP
+        if isinstance(ip.data, dpkt.udp.UDP):
+            udp = ip.data
+
+            # Check ports
+            if udp.sport in UDP_PORTS or udp.dport in UDP_PORTS and type(udp.data) == bytes:
+
+                # Check Magic
+                first_bytes = udp.data[:MAGIC_LEN]
+                mteams_type = None
+                if first_bytes == MTURN_MAGIC and ( udp.data[TRIM_LEN]>=128 and udp.data[TRIM_LEN]<192)  :
+                    # We might add a better check similar to the one in Tstat, looking for valid PT
+                    mteams_type = "mturn"
+                    trim = TRIM_LEN
+
+                # It is Teams MTurn
+                if mteams_type is not None:
+                    tup = (ip.src, ip.dst, udp.sport, udp.dport, mteams_type)
+                    mteams_pkt += 1
+
+                    # Check if in set
+                    if not tup in mteams_streams:
+                        print ("MTURN {} flow detected: {}:{} -> {}:{}".format(
+                            mteams_type, inet_to_str(ip.src), udp.sport, inet_to_str(ip.dst), udp.dport),
+                            file = sys.stderr)
+                        mteams_streams.add(tup)
+
+                    # Shorten data
+                    udp.ulen -= trim
+                    new_data = udp.data[trim:]
+                    udp.data = bytes(new_data)
+
+    tot_pkt += 1
+    output_file.writepkt(eth, ts)
+
+print("Total packets: {}, MTURN RTP/RTCP packets: {}".format(tot_pkt, mteams_pkt), file = sys.stderr)

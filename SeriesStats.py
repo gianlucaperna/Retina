@@ -25,7 +25,6 @@ def packet_loss(series):
             tx = max(series)-min(series)+1
             return 1-(rx/tx)
         else:
-            #print("qui")
             return -1
     except Exception as e:
         print(e)
@@ -55,7 +54,6 @@ def value_label(series):
         pass
 
 def csrc_agg(series):
-    # print("series: ", series)
     l = series.dropna().unique()
     l2 = []
     for el in l:
@@ -63,8 +61,7 @@ def csrc_agg(series):
             l2.append(i)
 
     value = list(set(l2))
-    # print(len(value))
-    # print(value)
+
     if not value:
         return "-"
     if len(value) == 1:

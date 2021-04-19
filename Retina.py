@@ -5,7 +5,7 @@
 import warnings
 #warnings.filterwarnings("ignore", "(?s).*MATPLOTLIBDATA.*", category=UserWarning)
 warnings.filterwarnings("error")
-from MergeCSV import merge_csv
+from MergeCSV import merge_csv, merge_csv_split
 from pcap2csv import pcap_to_csv, pcap_to_port
 from split_pcap import pcap_split
 import argparse
@@ -16,6 +16,7 @@ import time
 from rich.console import Console
 from rich.table import Table
 from rich import box
+from itertools import zip_longest
 
 #%%
 def set_n_process (pcap_app):
@@ -33,9 +34,9 @@ def split_file(pool_tuple):
     result_list = pool_tuple[2]
     name = os.path.basename(source_pcap).split(".")[0]
     pcap_path = os.path.dirname(source_pcap)
-    new_dir = pcap_split(num_packets,source_pcap, pcap_path, name)
-    new_dir_name = [os.path.join(new_dir,fs) for fs in os.listdir(new_dir)]
-    result_list.append(new_dir_name)
+    new_dir = pcap_split(num_packets, source_pcap, pcap_path, name)
+    new_dir_name = [os.path.join(new_dir, fs) for fs in os.listdir(new_dir)]
+    result_list.append({"new_dir_name": new_dir_name, "original_pcap_name": name})
 
 def find_ports(pool_tuple):
         new_dir_name_file = pool_tuple[0]
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--directory", help="Master directory", required=True)
     parser.add_argument("-j", "--join", help="Join all .csv" , action='store_true')
     parser.add_argument("-p", "--plot", help="Plot info", choices=['static', 'dynamic'], default=None, type=str.lower)
-    parser.add_argument("-so", "--software", help= "webex, skype, msteams, webrtc, other", choices=['webex', 'webrtc', 'msteams', 'skype', 'other'],
+    parser.add_argument("-so", "--software", help= "webex, skype, msteams, webrtc, other", choices=['webex', 'webrtc', 'msteams', 'zoom', 'skype', 'other'],
                         default="other", type=str.lower)
     # parser.add_argument ("-s", "--screen", help = "Set True if in capture there is only video screen sharing", \
 	# 					action = 'store_true', default = None)
@@ -118,26 +119,39 @@ if __name__ == "__main__":
     else:
         path_general_log = False
 
+    name_app = []
     #Splitting the pcap files
     if args.split is not None:
-    	pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1, )
-    	pool_tuple = [(x, args.split, result_list) for x in pcap_app]
-    	pool.imap_unordered(split_file, pool_tuple, chunksize=1)
-    	pool.close()
-    	pool.join()
-    	pcap_app = [j for i in result_list for j in i]
-    	result_list[:] = []
+        pool=multiprocessing.Pool(processes=n_process, maxtasksperchild=1, )
+        pool_tuple = [(x, args.split, result_list) for x in pcap_app]
+        pool.imap_unordered(split_file, pool_tuple, chunksize=1)
+        pool.close()
+        pool.join()
+        # for d in result_list:
+        #     for element in d["new_dir_name"]:
+        #         pcap_app.append(element)
+        pcap_app = [j for i in result_list for j in i["new_dir_name"]]
+
+        for d in result_list:
+
+            len_new_dir_name = len(d["new_dir_name"])
+            while len_new_dir_name > 0:
+                name_app.append(d["original_pcap_name"])
+                len_new_dir_name -= 1
+        result_list[:] = []
 
     #Find the RTP ports
-    pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1, )
+    pool= multiprocessing.Pool(processes=n_process, maxtasksperchild=1, )
     pool_tuple = [(x, result_list) for x in pcap_app]
     pool.imap_unordered(find_ports, pool_tuple, chunksize=1)
     pool.close()
     pool.join()
 
+    # print("PCAP_APP", pcap_app)
+
     #Main
     #Decode RTP traffic according to ports and create the aggregation .csv files
-    pool= multiprocessing.Pool(processes = n_process, maxtasksperchild=1,)
+    pool = multiprocessing.Pool(processes=n_process, maxtasksperchild=1,)
 
     pool_dict = [{"pcap": x["pcap"],
                    "port": x["port"]+args.port,
@@ -149,16 +163,23 @@ if __name__ == "__main__":
                    "path_general_log": path_general_log,
                    "time_aggregation": args.time_aggregation,
                    "threshold": args.threshold,
+                   "pcap_original_name": y,
                    } \
-                  for x in result_list]
-    print(pool_dict)
+                  for x, y in zip_longest(result_list, name_app)]
+
     pool.imap_unordered(pcap_to_csv, pool_dict, chunksize=1)
     pool.close()
     pool.join()
 
-    #%%
+    general_path_split = set([os.path.dirname(x["pcap"]) for x in result_list])
+    print("GENERAL", general_path_split)
+    if os.path.isfile(directory_p):
+        directory_main = os.path.dirname(directory_p)
+    if args.split is not None:
+        for path_split_folder in general_path_split:
+            for time_agg in args.time_aggregation:
+                merge_csv_split(directory=directory_main, split_directory=path_split_folder, time_aggregation=time_agg)
+
     if (args.join):
         for time_agg in args.time_aggregation:
     	    merge_csv(directory_p, time_agg)
-
-    print("IM DONE")
