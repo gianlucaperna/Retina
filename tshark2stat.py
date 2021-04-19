@@ -25,20 +25,15 @@ def tshark_to_stat(dict_flow_data,
                    name,
                    time_aggregation,
                    threshold,
-                   pcap_original_name,
                    software=None,
                    file_log=None,
                    loss_rate=0.2):
     try:
-        print("PCAP ORIGINAL NAME", pcap_original_name)
-        if not pcap_original_name:
-            pcap_original_name = name
 
         if software == "webex":
-            print("NAME", name, "PCAP_ORIGINAL_NAME", pcap_original_name)
-            file_log = find_log("log", pcap_original_name, file_log)
+            file_log = find_log("log", name, file_log)
         elif software == "webrtc":
-            file_log = find_log("txt", pcap_original_name, file_log)
+            file_log = find_log("txt", name, file_log)
         else:
             file_log = None
 

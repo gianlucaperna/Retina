@@ -57,20 +57,7 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         general_log = dict_param["path_general_log"]
         time_aggregation = dict_param["time_aggregation"]
         threshold = dict_param["threshold"]
-        pcap_original_name = dict_param["pcap_original_name"]
 
-        # source_pcap = tuple_param[0] # path del pcap
-        # used_port = tuple_param[1] #porte stun recuperate dal pcap
-        # screen = tuple_param[2] # old per webex, tutti i flussi video sono etichettati come SS
-        # quality = tuple_param[3] #old per webex, specifica qualità flussi video, (devono essere tutti uguali)
-        # plot = tuple_param[4] # se True crea Plot
-        # loss_rate = tuple_param[5] #
-        # software = tuple_param[6] # webex jitsi ..
-        # file_log = tuple_param[7] #directory padre dei file .log
-        # time_drop = tuple_param[8] # durata in secondi minima che deve avere un flusso
-        # general_log = tuple_param[9] #se c'è contiene il path dove salvare il file, altrimenti False
-        # time_aggregation = tuple_param[10]
-        # label = tuple_param[11]
 
         if software == "msteams" or software == "zoom":
             source_pcap = clean_pcap(tool=software, path_pcap=source_pcap)
@@ -167,7 +154,6 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
                                         name,
                                         time_agg,
                                         threshold,
-                                        pcap_original_name,
                                         software=software,
                                         file_log=file_log,
                                         loss_rate=loss_rate)
