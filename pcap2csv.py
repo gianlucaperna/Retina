@@ -89,7 +89,6 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         del(r)
         df = pd.DataFrame(rr, columns=name_col)
 
-        df.to_csv("df_from_tshark.csv", sep="?")
         df['rtp.p_type'] = df['rtp.p_type'].apply(lambda x: x.split(",")[0])
         df = df.astype({'frame.time_epoch': 'float64',
                         'frame.number': "int32",
