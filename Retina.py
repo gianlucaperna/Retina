@@ -57,20 +57,17 @@ if __name__ == "__main__":
     multiprocessing.freeze_support()
     parser = argparse.ArgumentParser(description="RTP flow analyzer")
     parser.add_argument("-d", "--directory", help="Master directory", required=True)
-    parser.add_argument("-j", "--join", help="Join all .csv" , action='store_true')
+    parser.add_argument("-j", "--join", help="Join all .csv", action='store_true')
     parser.add_argument("-p", "--plot", help="Plot info", choices=['static', 'dynamic'], default=None, type=str.lower)
-    parser.add_argument("-so", "--software", help= "webex, skype, msteams, webrtc, other", choices=['webex', 'webrtc', 'msteams', 'zoom', 'skype', 'other'],
-                        default="other", type=str.lower)
+    parser.add_argument("-so", "--software", help= "webex, skype, msteams, webrtc, other", choices=['webex', 'webrtc', 'msteams', 'zoom', 'skype', 'other'], default="other", type=str.lower)
     parser.add_argument("-log", "--log_dir", help="Directory logs file", default=None)
     parser.add_argument("-dp", "--drop", help = "Minimum length in time of the flow", type=int, default = 10)
     parser.add_argument("-gl", "--general_log", help="General log for flows, like Tstat", action='store_true', default = False)
     parser.add_argument("-ta", "--time_aggregation", help="time window aggregation", nargs='+', type=int, default=[1])
     parser.add_argument("-po", "--port", help="Add RTP port", nargs='+', type=int, default=[])
-    parser.add_argument("-lr", "--loss_rate", help="Set to drop flow with greater or equal loss_rate (default 0.2)", type=float
-						,default = 0.2)
-    parser.add_argument("-th", "--threshold", help="Set threshold for unsupervised labelling", type=float
-                        , default=400)
-    # parser.add_argument("-pt", "--payload_type", help="Should I consider Payload Type in RTP stream tuple", action='store_true', default=False)
+    parser.add_argument("-lr", "--loss_rate", help="Set to drop flow with greater or equal loss_rate (default 0.2)", type=float, default = 0.2)
+    parser.add_argument("-th", "--threshold", help="Set threshold for unsupervised labelling", type=float, default=400)
+    parser.add_argument("-proc", "--process", help="Set number of processes", type=int, default=8)
     console.print("!!!!! Time Aggregation is in milliseconds !!!!! ")
     args = parser.parse_args()
 
