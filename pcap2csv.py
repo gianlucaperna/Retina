@@ -10,6 +10,8 @@ import copy
 import sys
 import numpy as np
 import time
+from io import StringIO
+
 
 def clean_pcap(tool, path_pcap):
 
@@ -81,15 +83,18 @@ def pcap_to_csv(dict_param): #source_pcap, used_port
         o, e = subprocess.Popen(command, encoding='utf-8', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()
         end = time.time()
         print(f"Tshark time per {name}: {end - start}")
-        r = o.split("\n")
-        name_col = r.pop(0)
-        name_col = [e for e in name_col.split("?") if e not in ('ipv6.dst', 'ipv6.src')]
-        del(o)
-        rr = [x.split("?")[0:12] + list(filter(None, x.split("?")[12:16])) for x in r if '' not in x.split("?")[0:9]] #for each packet keep either IPv4 or IPv6
-        del(r)
-        df = pd.DataFrame(rr, columns=name_col)
-
-        df['rtp.p_type'] = df['rtp.p_type'].apply(lambda x: x.split(",")[0])
+        #r = o.split("\n")
+        #name_col = r.pop(0)
+        #name_col = [e for e in name_col.split("?") if e not in ('ipv6.dst', 'ipv6.src')]
+        #del(o)
+        #rr = [x.split("?")[0:12] + list(filter(None, x.split("?")[12:16])) for x in r if '' not in x.split("?")[0:9]] #for each packet keep either IPv4 or IPv6
+        #del(r)
+        #df = pd.DataFrame(rr, columns=name_col)
+        df = pd.read_csv(StringIO(o), header=0, sep="?", low_memory=False)
+        df["ip.src"] = df["ip.src"].fillna(df["ipv6.src"])
+        df["ip.dst"] = df["ip.dst"].fillna(df["ipv6.dst"])
+        df.drop(["ipv6.src", "ipv6.dst"], axis=1, inplace=True)
+        df['rtp.p_type'] = df['rtp.p_type'].apply(lambda x: str(x).split(",")[0])
         df = df.astype({'frame.time_epoch': 'float64',
                         'frame.number': "int32",
                         'frame.len': "int32",
