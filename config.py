@@ -1,4 +1,3 @@
-
 common_functions = ["std", "mean", "min", "max", "count", "kurtosis", "skew", "moment3", "moment4"]
 percentiles = ["p10", "p20", "p25", "p30", "p40", "p50", "p60", "p70", "p75", "p80", "p90", "p95"]
 special_functions = ["max_min_diff", "max_min_R", "min_max_R", "len_unique_percent", "max_value_count_percent"]

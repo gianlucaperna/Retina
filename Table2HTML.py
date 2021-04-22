@@ -1,5 +1,4 @@
-
-def table(df, text, flow = False):
+def table(df, text, flow=False):
     try:
         html = """
         <!doctype html>
@@ -22,7 +21,7 @@ def table(df, text, flow = False):
             <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
             <nav class="navbar navbar-dark bg-dark">
-                <h4 class="text-white text-center">RETINA: """+ text +"""<h4>
+                <h4 class="text-white text-center">RETINA: """ + text + """<h4>
             </nav>
 
             <div class="container-fluid pt-5">
@@ -44,19 +43,19 @@ def table(df, text, flow = False):
                         </thead>
                         <tbody>"""
         for row in df.itertuples():
-            html+= """<tr>"""
+            html += """<tr>"""
             if (flow):
-                html+= """<th scope="row">"""+str(row.Index)+"""</th>"""
+                html += """<th scope="row">""" + str(row.Index) + """</th>"""
             else:
-                html+= """<th scope="row">-</th>"""
-            html+=        """<td>"""+str(row.ssrc)+"""</td>"""+\
-                          """<td>"""+str(row.source_addr)+"""</td>"""+\
-                          """<td>"""+str(row.dest_addr)+"""</td>"""+\
-                          """<td>"""+str(row.source_port)+"""</td>"""+\
-                          """<td>"""+str(row.dest_port)+"""</td>"""+\
-                        """<td>"""+str(row.rtp_p_type)+"""</td>"""+\
-                        """<td>"""+str(row.csrc)+"""</td>"""+\
-                         """ <td>"""+str(row.label)+"""</td>
+                html += """<th scope="row">-</th>"""
+            html += """<td>""" + str(row.ssrc) + """</td>""" + \
+                    """<td>""" + str(row.source_addr) + """</td>""" + \
+                    """<td>""" + str(row.dest_addr) + """</td>""" + \
+                    """<td>""" + str(row.source_port) + """</td>""" + \
+                    """<td>""" + str(row.dest_port) + """</td>""" + \
+                    """<td>""" + str(row.rtp_p_type) + """</td>""" + \
+                    """<td>""" + str(row.csrc) + """</td>""" + \
+                    """ <td>""" + str(row.label) + """</td>
                         </tr>"""
 
         html += """
