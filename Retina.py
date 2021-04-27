@@ -64,7 +64,10 @@ if __name__ == "__main__":
                         choices=['webex', 'webrtc', 'msteams', 'zoom', 'skype', 'other'], default="other",
                         type=str.lower)
     parser.add_argument("-log", "--log_dir", help="Directory logs file", default=None)
-    parser.add_argument("-dp", "--drop", help="Minimum length in time of the flow", type=int, default=10)
+    parser.add_argument("-dp_time", "--drop", help="Minimum length in time of the flow", type=int, default=10)
+    parser.add_argument("-dp_packet", "--drop_packet", help="Minimum length in packet of the flow", type=int, default=100)
+    parser.add_argument("-out_gl", "--output_gl", help="Folder in which to put output of gl command, starting from Master directory (-d)", default="logs", type=str)
+    parser.add_argument("-im", "--internal_mask", help="Internal Mask of the private network", default="192.168.", type=str)
     parser.add_argument("-gl", "--general_log", help="General log for flows, like Tstat", action='store_true',
                         default=False)
     parser.add_argument("-ta", "--time_aggregation", help="time window aggregation", nargs='+', type=int, default=[1])
@@ -95,11 +98,10 @@ if __name__ == "__main__":
     result_list = manager.list()
     # creation of general log
     if args.general_log:
-        OUTDIR = "logs"
         if os.path.isdir(directory_p):
-            path_general_log = os.path.join(directory_p, OUTDIR)
+            path_general_log = os.path.join(directory_p, args.output_gl)
         else:
-            path_general_log = os.path.join(os.path.dirname(directory_p), OUTDIR)
+            path_general_log = os.path.join(os.path.dirname(directory_p), args.output_gl)
         if not os.path.isdir(path_general_log):
             os.makedirs(path_general_log)
     else:
@@ -126,6 +128,9 @@ if __name__ == "__main__":
                   "path_general_log": path_general_log,
                   "time_aggregation": args.time_aggregation,
                   "threshold": args.threshold,
+                  "out_gl": args.output_gl,
+                  "drop_packet": args.dp_packet,
+                  "internal_mask": args.internal_mask
                   }
                  for x in result_list]
 

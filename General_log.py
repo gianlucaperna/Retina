@@ -8,14 +8,15 @@ import pandas as pd
 import sys
 from SeriesStats import packet_loss
 
-OUTDIR = "logs"
-INTERNAL_MASK = "192.168."
-MIN_PKT = 100
-MIN_DURAT = 30
+
 stats = []
 
 
-def compute_stats(data, flow_id, file):
+def compute_stats(data, flow_id, file, out_gl, drop_packet, internal_mask, time_drop):
+    OUTDIR = out_gl
+    INTERNAL_MASK = internal_mask
+    MIN_PKT = drop_packet
+    MIN_DURAT = time_drop
     try:
         ipg = data["timestamps"].diff()
         bitrate = data["len_frame"].sum() / (data["timestamps"].max() - data["timestamps"].min()) * 8

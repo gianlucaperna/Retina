@@ -61,6 +61,9 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
         general_log = dict_param["path_general_log"]
         time_aggregation = dict_param["time_aggregation"]
         threshold = dict_param["threshold"]
+        out_gl = dict_param["output_gl"]
+        drop_packet = dict_param["dp_packet"]
+        internal_mask = dict_param["internal_mask"]
 
         if software == "msteams" or software == "zoom":
             source_pcap = clean_pcap(tool=software, path_pcap=source_pcap)
@@ -85,13 +88,7 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
                                 shell=True).communicate()
         end = time.time()
         print(f"Tshark time per {name}: {end - start}")
-        # r = o.split("\n")
-        # name_col = r.pop(0)
-        # name_col = [e for e in name_col.split("?") if e not in ('ipv6.dst', 'ipv6.src')]
-        # del(o)
-        # rr = [x.split("?")[0:12] + list(filter(None, x.split("?")[12:16])) for x in r if '' not in x.split("?")[0:9]] #for each packet keep either IPv4 or IPv6
-        # del(r)
-        # df = pd.DataFrame(rr, columns=name_col)
+
         df = pd.read_csv(StringIO(o), header=0, sep="?", low_memory=False)
         df["ip.src"] = df["ip.src"].fillna(df["ipv6.src"])
         df["ip.dst"] = df["ip.dst"].fillna(df["ipv6.dst"])
@@ -143,7 +140,9 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
         if general_log:
             general_dict_info = {}
             for flow_id in dict_flow_data:
-                s = compute_stats(copy.deepcopy(dict_flow_data[flow_id]), flow_id, name + ".pcapng")
+                s = compute_stats(copy.deepcopy(dict_flow_data[flow_id]), flow_id, name + ".pcapng", out_gl,
+                                  drop_packet, internal_mask, time_drop
+                )
                 if s is not None:
                     general_dict_info[flow_id] = s
                     general_df = pd.DataFrame.from_dict(general_dict_info, orient='index').reset_index(drop=True)
