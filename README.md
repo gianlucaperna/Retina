@@ -35,6 +35,7 @@ pip3 install -r requirements.txt
 
 ## Usage
 This is a `command line tool` that offers different kind of functionality
+
 Example of basic usage is:
 ```
 python3 Retina.py -d test/webex -so webex -log test/log/webex -ta 1000 2000
