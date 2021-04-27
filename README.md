@@ -42,7 +42,7 @@ python3 Retina.py -d test/webex -so webex -log test/log/webex -ta 1000 2000
 The outputs will be a files `.csv` with the `same name` of the pcaps.
 In this case we got two output that are pcap1_1000s.csv and pcap2_2000s.csv
   
-#### Basic arguments
+## Arguments
 
 The most important arguments are:
 * `directory (-d)`: master directory in which are contained all pcaps.
