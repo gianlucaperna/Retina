@@ -17,7 +17,7 @@ Done with https://github.com/ekalinin/github-markdown-toc )
    * [Usage](#usage)
    * [Modes](#modes)
    * [Arguments](#arguments)
-   * [Examples](#examples)
+   * [Functionality](#functionality)
 
 ## Installation
 
@@ -35,7 +35,6 @@ pip3 install -r requirements.txt
 
 ## Usage
 This is a `command line tool` that offers different kind of functionality
-
 Example of basic usage is:
 ```
 python3 Retina.py -d test/webex -so webex -log test/log/webex -ta 1000 2000
@@ -43,7 +42,7 @@ python3 Retina.py -d test/webex -so webex -log test/log/webex -ta 1000 2000
 The outputs will be a files `.csv` with the `same name` of the pcaps.
 In this case we got two output that are pcap1_1000s.csv and pcap2_2000s.csv
   
-## Arguments
+#### Basic arguments
 
 The most important arguments are:
 * `directory (-d)`: master directory in which are contained all pcaps.
@@ -64,3 +63,25 @@ The most important arguments are:
 * `general_log (-gl)`: Create a general log like Tstat for flows
 * `internal_mask (-im)`: Specify the internal mask of network to set the direction of the flow. Default="192.168."
 
+## Functionality
+
+How is shown in figure 1, Retina is a tool that take in input a pcap/pcapng files containing RTP traffic, and optionally a log file, and, produce in output different kind of stuff:
+
+1) .csv with statistics calculated for [time aggregation] seconds for each flow
+2) general log like Tstat (see more detail here [link tstat]) 
+3) static plot (.png) or responsive (.html)
+
+Retina is able to recognize 5 main class using the log, that are:
+
+1) HQ class (video >= 720p)
+2) MQ class (video 360 <= MQ < 720p)
+3) LQ class (video LQ < 360p)
+4) Audio
+5) ScreenSharing
+
+In case of Webex application we have also the FEC [remainder to fec RFC] flow that are always audio/video flow but with the purpose of recover error.
+
+Without the file log Retina can use an heuristic to understand what flow are Audio or Video but isn't able to understand what type of Video is.
+
+Retina can run in a multiprocess way in order to analyse more pcaps in parallel. Anyway the type of pcap that you analyse MUST become from the same software. This means that in a main directory Where will be run Retina you can put a lot of pcap but everyone MUST become from the sample application (e.g all webex or webRTC and so on..).
+The log files can be stored also in other directory, remember only that the name of the log MUST be the same of the pcap.
