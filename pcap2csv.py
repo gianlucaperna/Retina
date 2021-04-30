@@ -3,8 +3,8 @@ import subprocess
 import pandas as pd
 import os
 from tshark2stat import tshark_to_stat
-from plotting_static import plot_stuff_static
-from plotting import plot_stuff
+from Plotter.plotting_static import plot_stuff_static
+from Plotter.plotting import plot_stuff
 from General_log import compute_stats
 import copy
 import sys

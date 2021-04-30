@@ -1,6 +1,3 @@
-import pandas as pd
-import numpy as np
-
 
 def inter_statistic(dict_flow_data, LEN_DROP):
     try:

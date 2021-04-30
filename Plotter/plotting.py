@@ -1,21 +1,17 @@
 # Standard plotly imports
 import plotly.graph_objs as go
-import plotly.figure_factory as ff
-import plotly
 import plotly.express as px
-import plotly.io as pio
+
 # Python imports
 import os
 import pandas as pd
-from Table2HTML import table
-import numpy as np
 import sys
-from ast import literal_eval as make_tuple
 import itertools
 import seaborn as sns
-# from rich.console import Console
-# console = Console()
 from rich.traceback import install
+
+# Retina imports
+from Plotter.Table2HTML import table
 
 install()
 

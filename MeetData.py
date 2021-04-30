@@ -2,8 +2,8 @@
 
 
 from Label import label_by_length
-from InterStatistics import inter_statistic
-from SeriesStats import *
+from Stats.InterStatistics import inter_statistic
+from Stats.SeriesStats import *
 from LogWebexManager import *
 from LogWebrtcManager import webrtc_log_parse, webrtc_log_df
 from scipy.stats import kurtosis, skew

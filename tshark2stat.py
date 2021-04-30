@@ -2,7 +2,6 @@ import os
 import sys
 from MeetData import WebexDataset, webrtcDataset, OtherDataset
 import glob
-from functools import reduce
 
 
 def find_log(extension, name, file_log):
