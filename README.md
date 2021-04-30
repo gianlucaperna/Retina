@@ -114,13 +114,69 @@ Let's explain now the special function, reading the mathematical formula and the
 Suppose in all the following example that we start having this list of values:
 
 ```
-list = [0,0,0,0,0,1,1,1,1,2,3,4,4,5,5,6] 
+series = pandas.Series([0,0,0,0,0,1,1,1,1,2,3,4,4,5,5,6])
 ```
 
 We use the variable "list" to show an example of what the special functions produces in output.
 
 ```
+def max_min_diff(series):
+    return series.max() - series.min()
 
+print(max_min_diff(series)) --> 6
+```
+
+```
+def max_min_R(series):
+    try:
+        a = abs(series.max())
+        b = abs(series.min())
+        if a == 0 and b == 0:
+            return 0
+        else:
+            return a / (a + b)
+    except Exception as e:
+        print(f"Error: min_max_R a= {a}, b= {b}")
+        return 0
+
+print( max_min_R(series) ) --> 1
+```
+
+
+```
+def min_max_R(series):
+    try:
+        a = abs(series.max())
+        b = abs(series.min())
+        if a == 0 and b == 0:
+            return 0
+        else:
+            return b / (a + b)
+    except Exception as e:
+        print(f"Error: min_max_R a= {a}, b= {b}")
+        return 0
+
+
+print( min_min_R(series) ) --> 0
+```
+
+```
+def max_value_count_percent(series):
+    try:
+        return (series.value_counts().iloc[0]) / len(series)
+    except Exception as e:
+        return 0
+
+print( max_value_count(series) ) --> 0/16
+```
+```
+def len_unique_percent(series):
+    try:
+        return len(series.unique()) / len(series)
+    except Exception as e:
+        return 0
+        
+print( len_unique_percent(series) ) --> 7/16
 ```
 
 
