@@ -61,8 +61,8 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
         general_log = dict_param["path_general_log"]
         time_aggregation = dict_param["time_aggregation"]
         threshold = dict_param["threshold"]
-        out_gl = dict_param["output_gl"]
-        drop_packet = dict_param["dp_packet"]
+        out_gl = dict_param["out_gl"]
+        drop_packet = dict_param["drop_packet"]
         internal_mask = dict_param["internal_mask"]
 
         if software == "msteams" or software == "zoom":
@@ -94,6 +94,7 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
         df["ip.dst"] = df["ip.dst"].fillna(df["ipv6.dst"])
         df.drop(["ipv6.src", "ipv6.dst"], axis=1, inplace=True)
         df['rtp.p_type'] = df['rtp.p_type'].apply(lambda x: str(x).split(",")[0])
+        df["rtp.csrc.item"] = df["rtp.csrc.item"].fillna("empty")
         df = df.astype({'frame.time_epoch': 'float64',
                         'frame.number': "int32",
                         'frame.len': "int32",

@@ -129,7 +129,7 @@ if __name__ == "__main__":
                   "time_aggregation": args.time_aggregation,
                   "threshold": args.threshold,
                   "out_gl": args.output_gl,
-                  "drop_packet": args.dp_packet,
+                  "drop_packet": args.drop_packet,
                   "internal_mask": args.internal_mask
                   }
                  for x in result_list]

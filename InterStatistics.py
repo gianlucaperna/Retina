@@ -16,7 +16,9 @@ def inter_statistic(dict_flow_data, LEN_DROP):
             dict_flow_data[flow_id].drop(indexNames,
                                          inplace=True)  # drop tutti i pacchetti che hanno interarrivo maggiore di un secondo
             # così anche se un flusso riprende dopo tanto tempo non falsiamo le statistiche
+
             dict_flow_data[flow_id].dropna(inplace=True)
+
         return dict_flow_data, LEN_DROP
     except Exception as e:
         raise e
