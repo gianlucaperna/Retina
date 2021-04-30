@@ -70,7 +70,7 @@ if __name__ == "__main__":
     parser.add_argument("-im", "--internal_mask", help="Internal Mask of the private network", default="192.168.", type=str)
     parser.add_argument("-gl", "--general_log", help="General log for flows, like Tstat", action='store_true',
                         default=False)
-    parser.add_argument("-ta", "--time_aggregation", help="time window aggregation", nargs='+', type=int, default=[1])
+    parser.add_argument("-ta", "--time_aggregation", help="time window aggregation", nargs='+', type=int, default=[1000])
     parser.add_argument("-po", "--port", help="Add RTP port", nargs='+', type=int, default=[])
     parser.add_argument("-lr", "--loss_rate", help="Set to drop flow with greater or equal loss_rate (default 0.2)",
                         type=float, default=0.2)

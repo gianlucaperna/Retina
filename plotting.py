@@ -73,7 +73,7 @@ def label_for_plotting(dataset_dropped):
     dict_label = {
         -1: "Unknown",
         0: "Audio",
-        1: "Video all qualities",
+        1: "Video",
         2: "Fec-video",
         3: "ScreenSharing",
         4: "FEC-audio",
@@ -88,7 +88,7 @@ def label_for_plotting(dataset_dropped):
     for flow in dataset_dropped["flow"].unique():
         try:
             main_label = dataset_dropped[dataset_dropped["flow"] == flow]["label"].value_counts().index[0]
-            flow_label[make_tuple(flow)] = dict_label[main_label]
+            flow_label[flow] = dict_label[main_label]
         except Exception as e:
             print('Plotting - Error in flow_label: Error on line {}'.format(sys.exc_info()[-1].tb_lineno),
                   type(e).__name__, e)
@@ -97,7 +97,7 @@ def label_for_plotting(dataset_dropped):
     return flow_label
 
 
-def make_new_unique_table(dict_flow_df, flow_label, flows):
+def make_new_unique_table(dict_flow_df, flow_label, flows, software):
     unique_l = []
     for key in flows:
         value = dict_flow_df[key]
@@ -111,9 +111,14 @@ def make_new_unique_table(dict_flow_df, flow_label, flows):
             inner_list.append("unknown")
         unique_l.append(inner_list)
 
-    unique_df = pd.DataFrame(data=unique_l,
-                             columns=["ssrc", "source_addr", "dest_addr", "source_port", "dest_port", "rtp_p_type",
-                                      "csrc", "label"])
+    if software == "msteams" or software == "skype":
+        unique_df = pd.DataFrame(data=unique_l,
+                                 columns=["ssrc", "source_addr", "dest_addr", "source_port", "dest_port",
+                                          "csrc", "label"])
+    else:
+        unique_df = pd.DataFrame(data=unique_l,
+                                 columns=["ssrc", "source_addr", "dest_addr", "source_port", "dest_port", "rtp_p_type",
+                                          "csrc", "label"])
     return unique_df
 
 
@@ -135,7 +140,9 @@ def make_dict_csrc(dict_flow_df, unique_df, flows):
     return csrc_flows, csrc_colour
 
 
-def plot_stuff(pcap_path, dict_flow_df, df_unique, dataset_dropped, software):
+def plot_stuff(pcap_path, dict_flow_df, dataset_dropped, software):
+
+    print("Plotting....")
     # Plotting functions
     def plot_line(data_plot, title, y_label, flows, flow_label, dict_flow_df, csrc_colour):
 
@@ -197,7 +204,7 @@ def plot_stuff(pcap_path, dict_flow_df, df_unique, dataset_dropped, software):
         # Take flows from dataset_dropped and turn them into tuples
         flows = []
         for flow in dataset_dropped["flow"].unique():
-            flows.append(eval(flow))
+            flows.append(flow)
 
         # Just checking if keys in dataset dropped are equal to those of dict flow data
         #         if flows != list(dict_flow_df.keys()):
@@ -223,8 +230,9 @@ def plot_stuff(pcap_path, dict_flow_df, df_unique, dataset_dropped, software):
         interarrival_max_csv = {}
         rtp_marker_sum = {}
 
+        dataset_dropped.set_index("timestamp", inplace=True)
         for flow in flows:
-            df_scenario = dataset_dropped[dataset_dropped["flow"] == str(flow)].copy()
+            df_scenario = dataset_dropped[dataset_dropped["flow"] == flow].copy()
             #         df_scenario = df_scenario.sort_values('timestamps')
             #         df_scenario["timestamps"] = pd.to_datetime(df_scenario["timestamps"])
             #         df_scenario = df_scenario.set_index("timestamps")
@@ -240,7 +248,7 @@ def plot_stuff(pcap_path, dict_flow_df, df_unique, dataset_dropped, software):
 
         # Additional useful data
         # Unique df that has also csrc and label
-        unique_df = make_new_unique_table(dict_flow_df, flow_label, flows)
+        unique_df = make_new_unique_table(dict_flow_df, flow_label, flows, software)
 
         # csrc_flows - {csrc: list of flow tuples with that csrc}
         # csrc_colour - {csrc: colour}
@@ -262,6 +270,7 @@ def plot_stuff(pcap_path, dict_flow_df, df_unique, dataset_dropped, software):
 
         # --------------Speed in kbps from dataset_dropped
         data_plot = kbps_csv.copy()
+
         title = 'Bitrate in kbps from csv'
         y_label = "kbps from csv"
         fig_kbps_csv = plot_line(data_plot, title, y_label, flows, flow_label, dict_flow_df, csrc_colour)
@@ -316,7 +325,7 @@ def plot_stuff(pcap_path, dict_flow_df, df_unique, dataset_dropped, software):
             fig_rtp_marker_sum = plot_line(data_plot, title, y_label, flows, flow_label, dict_flow_df, csrc_colour)
 
         # Make table and save table and graphs in main html
-        html_table = table(unique_df, "Main Graph", True)
+        html_table = table(unique_df, "Main Graph", software, True)
         main_html_save = os.path.join(save_dir, "main_graphs.html")
         with open(main_html_save, 'w') as f:
             f.write(
@@ -328,7 +337,7 @@ def plot_stuff(pcap_path, dict_flow_df, df_unique, dataset_dropped, software):
             #             f.write(fig_pps.to_html(full_html=False, include_plotlyjs='cdn'))
             f.write(fig_pps_csv.to_html(full_html=False, include_plotlyjs='cdn'))
             f.write(fig_losses.to_html(full_html=False, include_plotlyjs='cdn'))
-            f.write(fig_interarrival_std.to_html(full_html=False, include_plotlyjs='cdn'))
+            # f.write(fig_interarrival_std.to_html(full_html=False, include_plotlyjs='cdn'))
             #             f.write(fig_interarrival_min.to_html(full_html=False, include_plotlyjs='cdn'))
             #             f.write(fig_interarrival_max.to_html(full_html=False, include_plotlyjs='cdn'))
             f.write(fig_interarrival_min_csv.to_html(full_html=False, include_plotlyjs='cdn'))
@@ -456,9 +465,14 @@ def plot_stuff(pcap_path, dict_flow_df, df_unique, dataset_dropped, software):
             table_list.append(label1)
 
             html_save = os.path.join(save_dir, tuple_to_string(key1) + '.html')
-            col = ["ssrc", "source_addr", "dest_addr", "source_port", "dest_port", "rtp_p_type", "csrc", "label"]
+            if software == "msteams" or software == "skype":
+                col = ["ssrc", "source_addr", "dest_addr", "source_port", "dest_port", "csrc", "label"]
+            else:
+                col = ["ssrc", "source_addr", "dest_addr", "source_port", "dest_port", "rtp_p_type", "csrc", "label"]
             with open(html_save, 'w') as f:
-                f.write(table(pd.DataFrame(data=[table_list], columns=col), "Flow Graph"))
+
+                df_table = pd.DataFrame(data=[table_list], columns=col)
+                f.write(table(df_table, "Flow Graph", software=software))
             with open(html_save, 'a') as f:
                 f.write(fig_bit_h.to_html(full_html=False, include_plotlyjs='cdn'))
                 f.write(fig_pl_h.to_html(full_html=False, include_plotlyjs='cdn'))

@@ -1,4 +1,4 @@
-def table(df, text, flow=False):
+def table(df, text, software, flow=False):
     try:
         html = """
         <!doctype html>
@@ -36,12 +36,17 @@ def table(df, text, flow=False):
                           <th scope="col">IP dst</th>
                           <th scope="col">Port Src</th>
                           <th scope="col">Port dst</th>
-                          <th scope="col">PT</th>
-                          <th scope="col">CSRC</th>
+                          """
+        if software != "msteams" and software != "skype":
+                html+= """<th scope="col">PT</th>"""
+
+        html+= """ <th scope="col">CSRC</th>
                           <th scope="col">Label</th>
                         </tr>
                         </thead>
-                        <tbody>"""
+                        <tbody>
+                    """
+
         for row in df.itertuples():
             html += """<tr>"""
             if (flow):
@@ -53,11 +58,11 @@ def table(df, text, flow=False):
                     """<td>""" + str(row.dest_addr) + """</td>""" + \
                     """<td>""" + str(row.source_port) + """</td>""" + \
                     """<td>""" + str(row.dest_port) + """</td>""" + \
-                    """<td>""" + str(row.rtp_p_type) + """</td>""" + \
                     """<td>""" + str(row.csrc) + """</td>""" + \
-                    """ <td>""" + str(row.label) + """</td>
-                        </tr>"""
-
+                    """ <td>""" + str(row.label) + """</td> """
+            if software != "msteams" and software != "skype":
+                html +=  """<td>""" + str(row.rtp_p_type) + """</td>"""
+            html += """</tr>"""
         html += """
                         </tbody>
                         </table>
