@@ -125,7 +125,7 @@ def max_min_diff(series):
 
 print(max_min_diff(series)) --> 6
 ```
-
+This feature explain the peak peak value in a time_aggregation window time by time, so, explain what is the maximum "oscillation" in our time_aggregation.
 ```
 def max_min_R(series):
     try:
@@ -141,7 +141,7 @@ def max_min_R(series):
 
 print( max_min_R(series) ) --> 1
 ```
-
+With max_min_R we try to capture in a non linear way what is the importance of the min on the total results. Infact more this value is close to 1 more the minimum is close to 0. max_min_R takes values in [0.5, 1].
 
 ```
 def min_max_R(series):
@@ -159,7 +159,7 @@ def min_max_R(series):
 
 print( min_min_R(series) ) --> 0
 ```
-
+Same but opposite of max_min_R
 ```
 def max_value_count_percent(series):
     try:
@@ -167,8 +167,10 @@ def max_value_count_percent(series):
     except Exception as e:
         return 0
 
-print( max_value_count(series) ) --> 0/16
+print( max_value_count(series) ) --> 5/16
 ```
+max_value_count_percent tells us how is "famous" the mode in the second. If in the time_aggregation we always have the same value (e.g [1,1,1,1,1,...,1]) the max_value_count_percent reach the maximum that is 1. 
+
 ```
 def len_unique_percent(series):
     try:
@@ -179,7 +181,7 @@ def len_unique_percent(series):
 print( len_unique_percent(series) ) --> 7/16
 ```
 
-
+len_unique_percent exaplain how many differentation there is in a series, differently from max_value_count_percent, here we try to understand if our data vary continuously. Infact, here we look at how many time we see different values on the total of the values. 
 
 
 
