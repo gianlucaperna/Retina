@@ -18,7 +18,7 @@ Done with https://github.com/ekalinin/github-markdown-toc )
    * [Modes](#modes)
    * [Arguments](#arguments)
    * [Functionality](#functionality)
-
+   * [Configuration](#configuration)
 ## Installation
 
 Simply clone this repo.
@@ -85,3 +85,45 @@ Without the file log Retina can use an heuristic to understand what flow are Aud
 
 Retina can run in a multiprocess way in order to analyse more pcaps in parallel. Anyway the type of pcap that you analyse MUST become from the same software. This means that in a main directory Where will be run Retina you can put a lot of pcap but everyone MUST become from the sample application (e.g all webex or webRTC and so on..).
 The log files can be stored also in other directory, remember only that the name of the log MUST be the same of the pcap.
+
+
+## Configuration
+Retina is provided of configuraiton file to regulate the statistics that you want in output in the dataset.
+
+Here is reported the config.py file with all possibile configuration settings:
+
+```
+common_functions = ["std", "mean", "min", "max", "count", "kurtosis", "skew", "moment3", "moment4"]
+percentiles = ["p10", "p20", "p25", "p30", "p40", "p50", "p60", "p70", "p75", "p80", "p90", "p95"]
+special_functions = ["max_min_diff", "max_min_R", "min_max_R", "len_unique_percent", "max_value_count_percent"]
+
+config_dict = {
+    'interarrival': common_functions + special_functions,
+    'len_udp': ["kbps"] + common_functions + special_functions,
+    'interlength_udp': common_functions + special_functions,
+    'rtp_interarrival': ["zeroes_count"] + common_functions + special_functions,
+    "rtp_marker": ["sum_check"],
+    "rtp_seq_num": ["packet_loss"],
+    "rtp_csrc": ["csrc_agg"],
+    "inter_time_sequence": common_functions + special_functions,
+}
+```
+
+How you can see, there are different kind of statistics, some standard that we call "common_functions" and "percentiles", in which we put all classical stats like mean, std and so on, and others created by us.
+Let's explain now the special function, reading the mathematical formula and then the intuition.
+Suppose in all the following example that we start having this list of values:
+
+```
+list = [0,0,0,0,0,1,1,1,1,2,3,4,4,5,5,6] 
+```
+
+We use the variable "list" to show an example of what the special functions produces in output.
+
+```
+
+```
+
+
+
+
+
