@@ -81,7 +81,7 @@ Retina is able to recognize 5 main class using the log, that are:
 4) Audio
 5) ScreenSharing
 
-In case of Webex application we have also the FEC [remainder to fec RFC] flow that are always audio/video flow but with the purpose of recover error.
+In case of Webex application we have also the FEC [RFC2733](https://www.rfc-editor.org/rfc/rfc2733) flow that are always audio/video flow but with the purpose of recover error.
 
 Without the file log Retina can use an heuristic to understand what flow are Audio or Video but isn't able to understand what type of Video is.
 
