@@ -6,7 +6,7 @@ Created on Wed May  6 17:17:04 2020
 """
 import pandas as pd
 import sys
-from SeriesStats import packet_loss
+from Stats.SeriesStats import packet_loss
 
 
 stats = []

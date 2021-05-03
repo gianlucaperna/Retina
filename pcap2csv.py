@@ -3,8 +3,8 @@ import subprocess
 import pandas as pd
 import os
 from tshark2stat import tshark_to_stat
-from plotting_static import plot_stuff_static
-from plotting import plot_stuff
+from Plotter.plotting_static import plot_stuff_static
+from Plotter.plotting import plot_stuff
 from General_log import compute_stats
 import copy
 import sys
@@ -61,8 +61,8 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
         general_log = dict_param["path_general_log"]
         time_aggregation = dict_param["time_aggregation"]
         threshold = dict_param["threshold"]
-        out_gl = dict_param["output_gl"]
-        drop_packet = dict_param["dp_packet"]
+        out_gl = dict_param["out_gl"]
+        drop_packet = dict_param["drop_packet"]
         internal_mask = dict_param["internal_mask"]
 
         if software == "msteams" or software == "zoom":
@@ -94,6 +94,7 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
         df["ip.dst"] = df["ip.dst"].fillna(df["ipv6.dst"])
         df.drop(["ipv6.src", "ipv6.dst"], axis=1, inplace=True)
         df['rtp.p_type'] = df['rtp.p_type'].apply(lambda x: str(x).split(",")[0])
+        df["rtp.csrc.item"] = df["rtp.csrc.item"].fillna("empty")
         df = df.astype({'frame.time_epoch': 'float64',
                         'frame.number': "int32",
                         'frame.len': "int32",
@@ -162,7 +163,7 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
             plot_stuff_static(plot_path, dict_flow_data, df_unique_flow)
         elif plot == "dynamic":
             plot_path = os.path.join(pcap_path, name)
-            plot_stuff(plot_path, dict_flow_data, df_unique_flow, dataset_dropped, software)
+            plot_stuff(plot_path, dict_flow_data, dataset_dropped, software)
         else:
             pass
         # end2=time.time()

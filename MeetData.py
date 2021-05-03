@@ -2,8 +2,8 @@
 
 
 from Label import label_by_length
-from InterStatistics import inter_statistic
-from SeriesStats import *
+from Stats.InterStatistics import inter_statistic
+from Stats.SeriesStats import *
 from LogWebexManager import *
 from LogWebrtcManager import webrtc_log_parse, webrtc_log_df
 from scipy.stats import kurtosis, skew
@@ -28,6 +28,7 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=
         start = time.time()
         LEN_DROP = 0
         dict_flow_data, LEN_DROP = inter_statistic(dict_flow_data, LEN_DROP)
+
         dict_flow_data_2 = {}
 
         if etichetto == "label_by_length":
@@ -58,12 +59,14 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=
 def OtherDataset(dict_flow_data, name, time_aggregation, threshold):
     try:
         params = {"label": [value_label]}
+
         dict_flow_data, dict_flow_data_2 = common(dict_flow_data=dict_flow_data,
                                                   time_aggregation=time_aggregation,
                                                   dict_params_stats=params,
                                                   pcap=name,
                                                   etichetto="label_by_length",
                                                   threshold=threshold)
+
         dataset_dropped = pd.concat([dict_flow_data_2[key] for key in dict_flow_data_2.keys()])
         dataset_dropped.dropna(inplace=True)
         dataset_dropped.reset_index(inplace=True, drop=True)

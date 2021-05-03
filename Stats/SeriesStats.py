@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Apr 25 15:16:19 2020
 
-@author: Gianl
-"""
 import numpy as np
-import pandas as pd
 from scipy.stats import moment
 
 
