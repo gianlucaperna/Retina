@@ -131,3 +131,4 @@ dmypy.json
 
 # Our folders/files
 .idea/
+.DS_Store*
