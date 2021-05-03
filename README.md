@@ -194,7 +194,7 @@ C:\Users\{name_user}\AppData\Local\CiscoSpark\media\calls
 WebRTC Chrome open the link before starting call:
 
 ```
-chrome://webrtc-internals/
+[chrome://webrtc-internals/](chrome://webrtc-internals/)
 ```
 Before close the call press on
 ```
