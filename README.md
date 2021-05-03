@@ -185,6 +185,15 @@ print( len_unique_percent(series) ) --> 7/16
 
 len_unique_percent exaplain how many differentation there is in a series, differently from max_value_count_percent, here we try to understand if our data vary continuously. Infact, here we look at how many time we see different values on the total of the values. 
 
+
+If you are intersted in only some statistics, you can easly speed up the code deleting all that you don't need.
+For example, imagine that we want only the percentile 60 for each stats, we can write in the config.py file this:
+```
+percentiles = ["p60"]
+```
+In this way we avoid to compute all the other percentiles.
+
+
 ## Retreive Logs
 
 Windows Webext Teams log Path:
