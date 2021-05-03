@@ -19,7 +19,7 @@ Done with https://github.com/ekalinin/github-markdown-toc )
    * [Arguments](#arguments)
    * [Functionality](#functionality)
    * [Configuration](#configuration)
-   * [Logs](#logs)
+   * [Retrive Logs](#logs)
 ## Installation
 
 Simply clone this repo.
@@ -184,7 +184,7 @@ print( len_unique_percent(series) ) --> 7/16
 
 len_unique_percent exaplain how many differentation there is in a series, differently from max_value_count_percent, here we try to understand if our data vary continuously. Infact, here we look at how many time we see different values on the total of the values. 
 
-## Logs
+## Retrive Logs
 
 Windows Webext Teams log Path:
 ```
