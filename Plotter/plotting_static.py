@@ -133,9 +133,9 @@ def plot_stuff_static(pcap_path, dict_flow_df, df_unique):
             f, (ax_box, ax_hist) = plt.subplots(2, sharex=True, gridspec_kw={"height_ratios": (.15, .85)})
             # plt.figure()
 
-            sns.distplot(packets_per_second[rtp_flow], color="#003049", label=rtp_flow, \
-                         hist_kws={"rwidth": 0.95, 'alpha': 0.75}, kde=False, ax=ax_hist)
-            sns.boxplot(packets_per_second[rtp_flow], ax=ax_box, color="#003049", saturation=1)
+            sns.histplot(packets_per_second[rtp_flow], color="#003049", label=rtp_flow, \
+                         kde=False, ax=ax_hist) #hist_kws={"rwidth": 0.95, 'alpha': 0.75}
+            sns.boxplot(x=packets_per_second[rtp_flow], ax=ax_box, color="#003049", saturation=1)
             ax_box.set(xlabel='')
             for patch in ax_box.artists:
                 r, g, b, a = patch.get_facecolor()
@@ -171,9 +171,9 @@ def plot_stuff_static(pcap_path, dict_flow_df, df_unique):
             f, (ax_box, ax_hist) = plt.subplots(2, sharex=True, gridspec_kw={"height_ratios": (.15, .85)})
             # plt.figure()
 
-            sns.distplot(kbps_series[rtp_flow], color="#05668D", label=rtp_flow, \
-                         hist_kws={"rwidth": 0.95, 'alpha': 0.75}, kde=False, ax=ax_hist)
-            sns.boxplot(kbps_series[rtp_flow], ax=ax_box, color="#05668D", saturation=1)
+            sns.histplot(kbps_series[rtp_flow], color="#05668D", label=rtp_flow, \
+                         kde=False, ax=ax_hist) #hist_kws={"rwidth": 0.95, 'alpha': 0.75}
+            sns.boxplot(x=kbps_series[rtp_flow], ax=ax_box, color="#05668D", saturation=1)
             ax_box.set(xlabel='')
             for patch in ax_box.artists:
                 r, g, b, a = patch.get_facecolor()
@@ -195,9 +195,9 @@ def plot_stuff_static(pcap_path, dict_flow_df, df_unique):
         for rtp_flow in dict_flow_df.keys():
             f, (ax_box, ax_hist) = plt.subplots(2, sharex=True, gridspec_kw={"height_ratios": (.15, .85)})
             # plt.figure()
-            sns.distplot(dict_flow_df[rtp_flow]['len_frame'], color="#D62828", label=rtp_flow, \
-                         hist_kws={"rwidth": 0.95, 'alpha': 0.75}, kde=False, ax=ax_hist)
-            sns.boxplot(dict_flow_df[rtp_flow]['len_frame'], ax=ax_box, color="#D62828", saturation=1)
+            sns.histplot(dict_flow_df[rtp_flow]['len_frame'], color="#D62828", label=rtp_flow, \
+                         kde=False, ax=ax_hist) # hist_kws={"rwidth": 0.95, 'alpha': 0.75}
+            sns.boxplot(x=dict_flow_df[rtp_flow]['len_frame'], ax=ax_box, color="#D62828", saturation=1)
             ax_box.set(xlabel='')
             for patch in ax_box.artists:
                 r, g, b, a = patch.get_facecolor()
@@ -242,9 +242,9 @@ def plot_stuff_static(pcap_path, dict_flow_df, df_unique):
             if len(inter_packet_gap_s[rtp_flow]) != 0:
                 # print(type(inter_packet_gap_s[rtp_flow].iloc[0]))
                 # print((inter_packet_gap_s[rtp_flow].total_seconds().iloc[0]))
-                sns.distplot(inter_packet_gap_s[rtp_flow], color="#5F0F40", label=rtp_flow, \
-                             hist_kws={"rwidth": 0.95, 'alpha': 0.75}, kde=False, ax=ax_hist)
-                sns.boxplot(inter_packet_gap_s[rtp_flow], ax=ax_box, color="#5F0F40", saturation=1)
+                sns.histplot(inter_packet_gap_s[rtp_flow], color="#5F0F40", label=rtp_flow, \
+                             kde=False, ax=ax_hist) #hist_kws={"rwidth": 0.95, 'alpha': 0.75}
+                sns.boxplot(x=inter_packet_gap_s[rtp_flow], ax=ax_box, color="#5F0F40", saturation=1)
                 ax_box.set(xlabel='')
                 for patch in ax_box.artists:
                     r, g, b, a = patch.get_facecolor()
@@ -277,9 +277,9 @@ def plot_stuff_static(pcap_path, dict_flow_df, df_unique):
             f, (ax_box, ax_hist) = plt.subplots(2, sharex=True, gridspec_kw={"height_ratios": (.15, .85)})
             # plt.figure()
             if len(inter_rtp_timestamp_gap[rtp_flow]) != 0:
-                sns.distplot(inter_rtp_timestamp_gap[rtp_flow], color="#4F5D75", label=rtp_flow, \
-                             hist_kws={"rwidth": 0.95, 'alpha': 0.75}, kde=False, ax=ax_hist)
-                sns.boxplot(inter_rtp_timestamp_gap[rtp_flow], ax=ax_box, color="#4F5D75", saturation=1)
+                sns.histplot(inter_rtp_timestamp_gap[rtp_flow], color="#4F5D75", label=rtp_flow, \
+                              kde=False, ax=ax_hist) #hist_kws={"rwidth": 0.95, 'alpha': 0.75}
+                sns.boxplot(x=inter_rtp_timestamp_gap[rtp_flow], ax=ax_box, color="#4F5D75", saturation=1)
                 ax_box.set(xlabel='')
                 for patch in ax_box.artists:
                     r, g, b, a = patch.get_facecolor()
