@@ -20,7 +20,7 @@ from rich import box
 def set_n_process(pcap_app, n_proc):
     n_process = multiprocessing.cpu_count() - 1
     if n_process > n_proc:
-        n_process = 30
+        n_process = n_proc
     if len(pcap_app) < n_proc:
         n_process = len(pcap_app)
     return n_process
