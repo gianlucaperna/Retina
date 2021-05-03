@@ -188,6 +188,7 @@ len_unique_percent exaplain how many differentation there is in a series, differ
 
 Windows Webext Teams log Path:
 ```
+C:\Users\{name_user}\AppData\Local\CiscoSpark\media\calls
 ```
 WebRTC Chrome open the link before starting call:
 
