@@ -20,6 +20,7 @@ Done with https://github.com/ekalinin/github-markdown-toc )
    * [Functionality](#functionality)
    * [Configuration](#configuration)
    * [Retreive Logs](#logs)
+   * [Plot] (#plot)
 ## Installation
 
 Simply clone this repo.
@@ -200,4 +201,6 @@ Before close the call press on
 create dump
 Download the PeerConnection updates and stats data
 ```
+
+## Plot
 
