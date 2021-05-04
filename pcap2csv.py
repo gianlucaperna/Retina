@@ -165,7 +165,7 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
             plot_path = os.path.join(pcap_path, name)
             plot_stuff(plot_path, dict_flow_data, dataset_dropped, software)
         elif plot == "interactive":
-            with open(f"{name}.pickle", "rb") as f:
+            with open(os.path.join(pcap_path,f"{name}.pickle", "rb")) as f:
                 pickle.dump(dict_flow_data, f)
         else:
             pass
