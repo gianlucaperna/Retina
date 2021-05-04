@@ -52,6 +52,10 @@ def make_rtp_data(dict_flow_data):
         inter_rtp_timestamp_gap[flow_id] = inner_df['rtp_timestamp'].diff().dropna()
         len_frame[flow_id] = inner_df["len_frame"].copy()
         rtp_timestamp[flow_id] = inner_df["rtp_timestamp"].copy()
+    #import pickle
+    #with open("to_plot_3p.pickle", "wb") as f:
+    #    pickle.dump({"packets_per_second":packets_per_second, "kbps_series":kbps_series, "inter_packet_gap_s":inter_packet_gap_s, "inter_rtp_timestamp_gap":inter_rtp_timestamp_gap,
+    #            "len_frame":len_frame, "rtp_timestamp":rtp_timestamp}, f)
 
     return packets_per_second, kbps_series, inter_packet_gap_s, inter_rtp_timestamp_gap, len_frame, rtp_timestamp
 

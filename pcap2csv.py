@@ -11,7 +11,7 @@ import sys
 import numpy as np
 import time
 from io import StringIO
-
+import pickle
 
 def clean_pcap(tool, path_pcap):
     name_pcap = os.path.basename(path_pcap)  # 3_p.pcapng
@@ -164,6 +164,9 @@ def pcap_to_csv(dict_param):  # source_pcap, used_port
         elif plot == "dynamic":
             plot_path = os.path.join(pcap_path, name)
             plot_stuff(plot_path, dict_flow_data, dataset_dropped, software)
+        elif plot == "interactive":
+            with open(f"{name}.pickle", "rb") as f:
+                pickle.dump(dict_flow_data, f)
         else:
             pass
         # end2=time.time()

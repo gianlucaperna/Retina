@@ -59,7 +59,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RTP flow analyzer")
     parser.add_argument("-d", "--directory", help="Master directory", required=True)
     parser.add_argument("-j", "--join", help="Join all .csv", action='store_true')
-    parser.add_argument("-p", "--plot", help="Plot info", choices=['static', 'dynamic'], default=None, type=str.lower)
+    parser.add_argument("-p", "--plot", help="Plot info", choices=['static', 'dynamic', 'interactive'], default=None, type=str.lower)
     parser.add_argument("-so", "--software", help="webex, skype, msteams, webrtc, other",
                         choices=['webex', 'webrtc', 'msteams', 'zoom', 'skype', 'other'], default="other",
                         type=str.lower)
