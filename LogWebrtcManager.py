@@ -226,7 +226,11 @@ def webrtc_log_df(dict_merge, pcap_name):
                         'mimeType', 'clockRate', 'concealmentEvents', 'concealment_diff',
                         'jitter2', 'framesReceived', 'packetsSent', 'framesSent',
                         'fps']  # 'frameWidth', 'frameHeight', 'fps',
+        columns_drop = ['frameWidth2', 'frameHeight2', 'kind', 'trackId', 'ssrc_hex', 'payloadType', 'codec',
+                        ]
+
         for key in dict_merge.keys():
+
             dict_merge[key]["label2"] = dict_merge[key]["label"].map(dict_label)
             dict_merge[key].loc[:, "flow"] = str(key)  # aggiungo nome flusso al dataset
             dict_merge[key].loc[:, "pcap"] = pcap_name
@@ -276,10 +280,10 @@ def webrtc_log_df(dict_merge, pcap_name):
             train = dict_merge[key].drop(columns_drop, axis=1, errors='ignore')
             train = train.loc[train["label"] != -1]
             df_train = pd.concat([df_train, train])
-        # Attenti con questo drop!
+
+        df_train = df_train.fillna(-1)
+        #Careful with this drop!
         df_train = df_train.dropna()
-        # df_train.to_csv(f"~/shared/Stadia_catture/aha_{pcap_name}.csv")
-        # print(df_train[df_train["label"]==0]["frameWidth"].value_counts())
         return df_train
     except Exception as e:
         print('Log jitsi: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)

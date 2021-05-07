@@ -135,6 +135,7 @@ def webrtcDataset(dict_flow_data, name, file_log, time_aggregation):
             b = dict_flow_data_2[key].set_index("timestamps")
             dict_merge[key] = a_new.join(b, how="inner")
         # this returns to json2stat, it's dataset_dropped
+
         df_train = webrtc_log_df(dict_merge, name)
         df_train.reset_index(drop=False, inplace=True)
 

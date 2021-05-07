@@ -78,6 +78,9 @@ def tshark_to_stat(dict_flow_data,
                                                           'index': 'timestamp',
                                                           }, errors="ignore")
 
+        if dataset_dropped.empty:
+            print("Dataset empty!")
+
         if "flow" in dataset_dropped.columns:
             dataset_dropped["flow"] = dataset_dropped["flow"].apply(eval)
             if len(dataset_dropped["flow"].iloc[0]) == 6:
