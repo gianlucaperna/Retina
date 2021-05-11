@@ -1,7 +1,6 @@
 argparse==1.4.0
 cycler==0.10.0
 datetime==4.3
-glob3
 matplotlib==3.2.1
 more-itertools==8.3.0
 numpy==1.18.5
