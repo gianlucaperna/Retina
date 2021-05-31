@@ -35,6 +35,24 @@ You can easily install all the requirements running:
 pip3 install -r requirements.txt
 ```
 
+Retina is provided also of a docker version compiled for arm and amd systems, you can install it easly running this command:
+
+```
+docker pull gianlucapolito/retina:v2
+```
+For what concern the usage, instead of run Retina with:
+
+```
+python Retina.py ...
+```
+
+Run in this way:
+
+```
+docker run -v /Users/gianlucaperna/Desktop/Debug_webex:/Debug_webex retina -d /Debug_webex -log /Debug_webex -so webex -ta 2000
+```
+
+where after -v you specify the folder to mount, then you specify all the parameters that are explained here later.
 ## Usage
 This is a `command line tool` that offers different kind of functionality
 Example of basic usage is:
