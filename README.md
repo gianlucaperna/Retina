@@ -231,3 +231,19 @@ Download the PeerConnection updates and stats data
 
 ## Plot
 
+Retina is able to produce in output different kind of plots, we can summarize them in 3 categories:
+-static
+-dyniamic
+-interactive
+
+In particular, when in Retina you use **-p** parameters, you then have to specify on of the three arguments written above.
+With **-p static** you receive in output a folder per each flow inside the pcap, in which is stored different **.png** pictures, desbring different stats of the flow. In particular you will have chart for:
+- bitrate
+- packet length
+- rtp timestamp
+- interarrival
+
+If you specify instead **-p dynamic** you got the same as the static, but, in different **html** files for more responsive experience.
+
+In the last case, that is **-p interactive** you got a **.pickle** file that you will upload on a dedicate dashboard that you can found at this link: https://share.streamlit.io/gianlucapolito/retina-dashboard/main/dashboard.py
+The last case is strongly suggested if you are interested in analyze you traffic in a really cool and responsive way.
