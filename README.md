@@ -1,15 +1,15 @@
 # Retina (Real-Time Analyzer)
 
-Analyse a posteriori Real Time Traffic (RTP-SRTP) with a simple tool written in python.
-This tool provides all functionality to create a dataset aggregation and to plot data.
-It uses `multiprocessing` in its internal to increase the number of pcap/pcapng that you can analyse per time.
-We provide a functionalities to label the data reading pcap and log file of webex application or webRTC log.
+Analyse Real Time Communications traffic (RTC) with this command-line tool written exclusively in Python.
+Given one or more packet captures of RTC traffic, Retina produces a rich log of statistics on observed streams.
+It is highly configurable and gives the possibility to choose the types of statistics to output, the desired temporal aggregation (ex. per-second statistsics) as well as many other parameters. If the packet capture comes along with application logs, it can match the data and enrich its output with application and QoE-related statistics. Retina uses multiprocessing if given more than one captures to process.
 
-For information about this Readme file and this tool please write to
+
+For more information about this Readme file and the tool please write to:
 [gianluca.perna@polito.it](mailto:gianluca.perna@polito.it)
 [dena.markudova@polito.it](mailto:dena.markudova@polito.it)
 
-## Table of Content
+## Table of Contents
 <!---
 Done with https://github.com/ekalinin/github-markdown-toc )
 -->
@@ -17,10 +17,11 @@ Done with https://github.com/ekalinin/github-markdown-toc )
    * [Usage](#usage)
    * [Modes](#modes)
    * [Arguments](#arguments)
-   * [Functionality](#functionality)
+   * [Functionalities](#functionalities)
    * [Configuration](#configuration)
    * [Retreive Logs](#logs)
    * [Plot](#plot)
+
 ## Installation
 
 Simply clone this repo.
@@ -29,67 +30,66 @@ Also the installation of tshark is required:
  sudo apt-get install -y tshark
 ```
 
-Dependencies are: `matplotlib numpy pandas ... we want to put all of them here?`.
+The tool uses a lot of libraries like numpy, matplotlib etc.
 You can easily install all the requirements running:
 ```
 pip3 install -r requirements.txt
 ```
 
-Retina is provided also of a docker version compiled for arm and amd systems, you can install it easly running this command:
+Retina is also available as a dockerized version, compiled for *arm* and *amd* systems, you can install it by running this command:
 
 ```
 docker pull gianlucapolito/retina:v2
 ```
-For what concern the usage, instead of run Retina with:
 
-```
-python Retina.py ...
-```
-
-Run in this way:
-
-```
-docker run -v /Users/gianlucaperna/Desktop/Debug_webex:/Debug_webex retina -d /Debug_webex -log /Debug_webex -so webex -ta 2000
-```
-
-where after -v you specify the folder to mount, then you specify all the parameters that are explained here later.
 ## Usage
-This is a `command line tool` that offers different kind of functionality
-Example of basic usage is:
+This is a `command line tool` with many functionalities controlled by arguments.
+
+An example of basic usage is:
 ```
 python3 Retina.py -d test/webex -so webex -log test/log/webex -ta 1000 2000
 ```
-The outputs will be a files `.csv` with the `same name` of the pcaps.
-In this case we got two output that are pcap1_1000s.csv and pcap2_2000s.csv
+where Retina.py is the *main* and the rest are arguments.
+The outputs will be `.csv` files with the `same name` of the pcaps.
+In this case we got two output files that are pcap1_1000s.csv and pcap2_2000s.csv
+
+To run the docker, use:
+```
+docker run -v /Users/gianlucaperna/Desktop/Debug_webex:/Debug_webex retina -d /Debug_webex -log /Debug_webex -so webex -ta 2000
+```
+where after -v you specify the folder to mount, then you specify all the parameters that are explained in the section [Arguments](#arguments).
+
   
 #### Basic arguments
 
 The most important arguments are:
-* `directory (-d)`: master directory in which are contained all pcaps.
-* `log (-log)`: the path in which are stored the log file (.txt for Webex and .log for webRTC). Pay attention that the file log MUST have the same name of the pcap.
-* `software (-so)`: which software will be analysed [webex, webrtc, zoom, msteams, Skype, other] for Webex and webRTC is important to specify correctly this arguments if you pass -log parameter.
-* `plot (-p)`: which type of plot to create [dynamic, static]
-* `time_aggregation (-ta)`: specify the time aggregation for the data. Pay attention that the values MUST be written in ms.
-* `join (-j)`: Join automatically all .csv at the end of the analyses process, to give you a complete dataset.
+* `directory (-d)`: master directory which contains all pcaps that we want to elaborate.
+* `log (-log)`: the path for the application log files (.txt for Webex and .log for webRTC). Note that the log files MUST have the same name of their corresponding pcaps.
+* `software (-so)`: which software will be analysed [webex, webrtc, zoom, msteams, skype, other]. When passing the -log parameter, (for Webex and webRTC) it is important to correctly specify the -so argument.
+* `plot (-p)`: which type of plots to create [dynamic, static]
+* `time_aggregation (-ta)`: specify the time aggregation for the data. Values are in **ms**. ex. 1000 for time aggregation of 1s.
+* `join (-j)`: Join all .csv files into one dataset, if elaborating many pcaps.
 * `loss rate (-lr)`: maximum value of loss rate that a flow can have to be considered. If the value computed on a flow is over the loss rate, the flow will be discarded. Default=0.2 [0-1]
-* `drop_packet (-dp)`: minimum number of packet that MUST be present in the flow, otherwise it will be discarded. Default=100
-* `drop_time (-dp_time)`: minimum length in terms of seconds of flow to be considered, otherwise it will be discarded. Default=20
-* `port (-po)`: Retina uses an heuristic to understand on which port there is RTP traffic. If you need, you can specify others port using this parameter
-* `process (-proc)`: maximum number of process that the tool could be use. With this value you specify the maximum in order to avoid that multiprocessing can consume all the CPU. If the num pcaps<process, the tool will use num pcap process
-* `port (-th)`: If you don't provide a -log file Retina can try to label your data in Audio/Video using an heuristic based on mean length of the packets in a flow. Default=400
+* `drop_packet (-dp)`: minimum number of packet that should be present in the flow for it to be considered. Default=100
+* `drop_time (-dp_time)`: minimum duration of flow for it to be considered. Default=20
+* `port (-po)`: port numbers for the specific RTC application. Retina uses a heuristic to understand on which port there is RTP traffic. If you need, you can specify the ports instead.
+* `process (-proc)`: maximum number of process that the tool is allowed to use. This is to avoid consuming all CPU. If the number of pcaps is larger than the number of process, the tool will use as many processes as the number of pcaps.
+* `threshold (-th)`: If you don't provide a -log file Retina can try to label your data in Audio/Video using an heuristic based on mean length of the packets in a flow. Default=400
 
-## Log compatible with Tstat
-* `output_gl (-out_gl)`:  path where will be stored the output of the gl
-* `general_log (-gl)`: Create a general log like Tstat for flows
-* `internal_mask (-im)`: Specify the internal mask of network to set the direction of the flow. Default="192.168."
+## Per-flow log
 
-## Functionality
+* `general_log (-gl)`: Create a smaller per-flow log (general log)
+* `output_gl (-out_gl)`: Specify the path for the per-flow log
+* `internal_mask (-im)`: Specify the internal mask of the network to set the direction of the flows. Default="192.168." for outbound flows
 
-How is shown in figure 1, Retina is a tool that take in input a pcap/pcapng files containing RTP traffic, and optionally a log file, and, produce in output different kind of stuff:
+## Functionalities
 
-1) .csv with statistics calculated for [time aggregation] seconds for each flow
-2) general log like Tstat (see more detail here [link tstat]) 
-3) static plot (.png) or responsive (.html)
+We show the basic scheme of Retina on Figure 1.
+It needs one or more RTP traffic pcap files as input and outputs various statistic logs and plots:
+
+1) .csv with statistics calculated for [time aggregation] ms for each flow
+2) Per-flow log. This log is inspired by **Tstat** ([link tstat]), a tool for network traffic monitoring. 
+3) Static plots (.png files) or responsive plots (.html files) on various flow characteristics like bitrate, number of packets, packet interarrival etc.
 
 Retina is able to recognize 5 main class using the log, that are:
 
