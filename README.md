@@ -16,11 +16,11 @@ Done with https://github.com/ekalinin/github-markdown-toc )
    * [Installation](#installation)
    * [Usage](#usage)
    * [Arguments](#arguments)
-   * [Per-flow log](#perflow)
+   * [Per-flow log](#per-flow-log)
    * [Functionalities](#functionalities)
    * [Configuration](#configuration)
-   * [Application log retrieval](#applog)
-   * [Plot](#plot)
+   * [Application log retrieval](#application-log-retrieval)
+   * [Plots](#plots)
 
 ## Installation
 
