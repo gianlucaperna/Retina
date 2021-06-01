@@ -16,10 +16,10 @@ Done with https://github.com/ekalinin/github-markdown-toc )
    * [Installation](#installation)
    * [Usage](#usage)
    * [Arguments](#arguments)
-   * [Per-flow log](#per-flow log)
+   * [Per-flow log](#perflow)
    * [Functionalities](#functionalities)
    * [Configuration](#configuration)
-   * [Application log retrieval](#Application log retrieval)
+   * [Application log retrieval](#applog)
    * [Plot](#plot)
 
 ## Installation
@@ -92,7 +92,7 @@ The most important arguments are:
 ## Functionalities
 
 We show the basic scheme of Retina on the figure below:
-![Scheme image](https://github.com/GianlucaPoliTo/Retina/scheme_retina.png)
+![Scheme image](https://github.com/GianlucaPoliTo/Retina/blob/main/scheme_retina.png)
 
 It takes one or more RTP traffic pcap files as input and outputs various statistic logs and plots:
 
@@ -102,16 +102,14 @@ It takes one or more RTP traffic pcap files as input and outputs various statist
 
 If an application log is provided to Retina, the per time-bin log contains details on the type of media exchanged by the RTP streams - ex. audio, video, FEC, screen sharing, including the video resolution. To simplify the resolution column we also add a classification into 5 media types:
 
-<--
 1) High Quality video (video >= 720p)
 2) Medium Quality video (video 360 <= MQ < 720p)
 3) Low Quality video (video LQ < 360p)
 4) Audio
 5) ScreenSharing
 6) FEC (Forward Error Correction streams - only for Webex)
--->
 
-If instead, an application log is not provided, Retina uses an heuristic based on the packet size to understand the media types, but can only recognise audio vs. video.
+If instead, an application log is not provided, Retina uses a heuristic based on the packet size to understand the media types, but can only recognise audio vs. video.
 
 
 ## Configuration
