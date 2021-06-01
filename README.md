@@ -97,7 +97,7 @@ We show the basic scheme of Retina on the figure below:
 It takes one or more RTP traffic pcap files as input and outputs various statistic logs and plots:
 
 1) Per time-bin log. A `.csv` file with statistics calculated per [time aggregation] ms for each flow
-2) Per-flow log. This log is inspired by [Tstat] (http://tstat.polito.it/), a tool for network traffic monitoring. 
+2) Per-flow log. This log is inspired by [tstat](http://tstat.polito.it/), a tool for network traffic monitoring. 
 3) Static plots (.png files) or responsive plots (.html files) on various flow characteristics like bitrate, number of packets, packet interarrival etc.
 
 If an application log is provided to Retina, the per time-bin log contains details on the type of media exchanged by the RTP streams - ex. audio, video, FEC, screen sharing, including the video resolution. To simplify the resolution column we also add a classification into 5 media types:
