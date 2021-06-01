@@ -15,8 +15,8 @@ Done with https://github.com/ekalinin/github-markdown-toc )
 -->
    * [Installation](#installation)
    * [Usage](#usage)
-   * [Modes](#modes)
    * [Arguments](#arguments)
+   * [Per-flow logs](#per-flow logs)
    * [Functionalities](#functionalities)
    * [Configuration](#configuration)
    * [Retreive Logs](#logs)
@@ -45,13 +45,20 @@ docker pull gianlucapolito/retina:v2
 ## Usage
 This is a `command line tool` with many functionalities controlled by arguments.
 
-An example of basic usage is:
+Basic usage with one pcap file:
 ```
-python3 Retina.py -d test/webex -so webex -log test/log/webex -ta 1000 2000
+python3 Retina.py -d test/webex/pcap1.pcap -so webex -log test/log/webex -ta 1000
 ```
-where Retina.py is the *main* and the rest are arguments.
-The outputs will be `.csv` files with the `same name` of the pcaps.
-In this case we got two output files that are pcap1_1000s.csv and pcap2_2000s.csv
+where Retina.py is the *main* and the rest are arguments. We take the pcap file *test/webex/pcap1.pcap* and its corresponding log file (of the same name) from the folder *test/log/webex* and create a `.csv` file of statistics with a time aggregation of 1 second (1000ms).
+The name of the `.csv` file will be *pcap1_1000s.csv*
+
+Basic usage with multiple pcap files in the same folder and of the same application:
+```
+python3 Retina.py -d test/webex -so webex -log test/log/webex -ta 1000
+```
+Say that we have two pcap files pcap1 and pcap2 in the folder *test/webex*. We give as input the directory *test/webex* and the directory of the application log files for the two pcaps (*test/log/webex*).
+The outputs will be `.csv` files with the `same name` of the pcaps. In this case Retina will output two files: pcap1_1000s.csv and pcap2_1000s.csv
+
 
 To run the docker, use:
 ```
@@ -60,7 +67,7 @@ docker run -v /Users/gianlucaperna/Desktop/Debug_webex:/Debug_webex retina -d /D
 where after -v you specify the folder to mount, then you specify all the parameters that are explained in the section [Arguments](#arguments).
 
   
-#### Basic arguments
+#### Arguments
 
 The most important arguments are:
 * `directory (-d)`: master directory which contains all pcaps that we want to elaborate.
@@ -76,7 +83,7 @@ The most important arguments are:
 * `process (-proc)`: maximum number of process that the tool is allowed to use. This is to avoid consuming all CPU. If the number of pcaps is larger than the number of process, the tool will use as many processes as the number of pcaps.
 * `threshold (-th)`: If you don't provide a -log file Retina can try to label your data in Audio/Video using an heuristic based on mean length of the packets in a flow. Default=400
 
-## Per-flow log
+#### Per-flow log
 
 * `general_log (-gl)`: Create a smaller per-flow log (general log)
 * `output_gl (-out_gl)`: Specify the path for the per-flow log
@@ -84,33 +91,33 @@ The most important arguments are:
 
 ## Functionalities
 
-We show the basic scheme of Retina on Figure 1.
-It needs one or more RTP traffic pcap files as input and outputs various statistic logs and plots:
+We show the basic scheme of Retina on the figure below:
+![Scheme image](https://github.com/GianlucaPoliTo/Retina/scheme_retina.png)
 
-1) .csv with statistics calculated for [time aggregation] ms for each flow
+It takes one or more RTP traffic pcap files as input and outputs various statistic logs and plots:
+
+1) Per time-bin log. A `.csv` file with statistics calculated per [time aggregation] ms for each flow
 2) Per-flow log. This log is inspired by **Tstat** ([link tstat]), a tool for network traffic monitoring. 
 3) Static plots (.png files) or responsive plots (.html files) on various flow characteristics like bitrate, number of packets, packet interarrival etc.
 
-Retina is able to recognize 5 main class using the log, that are:
+If an application log is provided to Retina, the per time-bin log contains details on the type of media exchanged by the RTP streams - ex. audio, video, FEC, screen sharing, including the video resolution. To simplify the resolution column we also add a classification into 5 media types:
 
-1) HQ class (video >= 720p)
-2) MQ class (video 360 <= MQ < 720p)
-3) LQ class (video LQ < 360p)
+<--
+1) High Quality video (video >= 720p)
+2) Medium Quality video (video 360 <= MQ < 720p)
+3) Low Quality video (video LQ < 360p)
 4) Audio
 5) ScreenSharing
+6) FEC (Forward Error Correction streams - only for Webex)
+-->
 
-In case of Webex application we have also the FEC [RFC2733](https://www.rfc-editor.org/rfc/rfc2733) flow that are always audio/video flow but with the purpose of recover error.
-
-Without the file log Retina can use an heuristic to understand what flow are Audio or Video but isn't able to understand what type of Video is.
-
-Retina can run in a multiprocess way in order to analyse more pcaps in parallel. Anyway the type of pcap that you analyse MUST become from the same software. This means that in a main directory Where will be run Retina you can put a lot of pcap but everyone MUST become from the sample application (e.g all webex or webRTC and so on..).
-The log files can be stored also in other directory, remember only that the name of the log MUST be the same of the pcap.
+If instead, an application log is not provided, Retina uses an heuristic based on the packet size to understand the media types, but can only recognise audio vs. video.
 
 
 ## Configuration
-Retina is provided of configuraiton file to regulate the statistics that you want in output in the dataset.
+The configuraiton file **config.py** lets you choose the statistics to output. If you don't need all statistics computed, this can significantly speed up the creation of the logs.
 
-Here is reported the config.py file with all possibile configuration settings:
+Here is the config.py file with all possibile configuration settings:
 
 ```
 common_functions = ["std", "mean", "min", "max", "count", "kurtosis", "skew", "moment3", "moment4"]
@@ -129,15 +136,14 @@ config_dict = {
 }
 ```
 
-How you can see, there are different kind of statistics, some standard that we call "common_functions" and "percentiles", in which we put all classical stats like mean, std and so on, and others created by us.
-Let's explain now the special function, reading the mathematical formula and then the intuition.
-Suppose in all the following example that we start having this list of values:
+We divide the statistics into three types: standard ones - "common_functions" and "percentiles", where we have all classical stats like mean, standard deviation and so on, and then "special_functions" created by us.
+Below we explain the special functions, using the mathematical formulas and some intuition.
+
+Suppose that for the time aggregation (ex. 1s), we have collected this list of values:
 
 ```
 series = pandas.Series([0,0,0,0,0,1,1,1,1,2,3,4,4,5,5,6])
 ```
-
-We use the variable "list" to show an example of what the special functions produces in output.
 
 ```
 def max_min_diff(series):
@@ -145,8 +151,10 @@ def max_min_diff(series):
 
 print(max_min_diff(series)) --> 6
 ```
-This feature explain the peak peak value in a time_aggregation window time by time, so, explain what is the maximum "oscillation" in our time_aggregation.
+This statistic expresses the peak value in a time_aggregation window time by time, in other words, what is the maximum "oscillation" in our time_aggregation.
+
 ```
+
 def max_min_R(series):
     try:
         a = abs(series.max())
@@ -161,7 +169,7 @@ def max_min_R(series):
 
 print( max_min_R(series) ) --> 1
 ```
-With max_min_R we try to capture in a non linear way what is the importance of the min on the total results. Infact more this value is close to 1 more the minimum is close to 0. max_min_R takes values in [0.5, 1].
+max-min ratio. With max_min_R we try to capture the importance of the *min* on the total results, in a non-linear way. The closer this value is to 1, the more the minimum is close to 0. max_min_R takes values in [0.5, 1].
 
 ```
 def min_max_R(series):
@@ -179,7 +187,8 @@ def min_max_R(series):
 
 print( min_min_R(series) ) --> 0
 ```
-Same but opposite of max_min_R
+Same as max_min_R, but the opposite ratio
+
 ```
 def max_value_count_percent(series):
     try:
@@ -189,7 +198,7 @@ def max_value_count_percent(series):
 
 print( max_value_count(series) ) --> 5/16
 ```
-max_value_count_percent tells us how is "famous" the mode in the second. If in the time_aggregation we always have the same value (e.g [1,1,1,1,1,...,1]) the max_value_count_percent reach the maximum that is 1. 
+max_value_count_percent tells us how "famous" the mode in the time bin. If in the time bin we always have the same value (e.g [1,1,1,1,1,...,1]) the max_value_count_percent reach the maximum that is 1. 
 
 ```
 def len_unique_percent(series):
@@ -201,49 +210,49 @@ def len_unique_percent(series):
 print( len_unique_percent(series) ) --> 7/16
 ```
 
-len_unique_percent exaplain how many differentation there is in a series, differently from max_value_count_percent, here we try to understand if our data vary continuously. Infact, here we look at how many time we see different values on the total of the values. 
+len_unique_percent is the share of different values over all values in the list. It captures the differentation in a series. 
 
-#### How modify config.py file
-If you are intersted in only some statistics, you can easly speed up the code deleting all that you don't need.
-For example, imagine that we want only the percentile 60 for each stats, we can write in the config.py file this:
+#### Modifyint the configuration file
+If you are intersted in only some statistics, you can easly modify the **config.py** file and speed up Retina.
+For example, imagine that we want only the percentile 60 for each stat, we can write:
 ```
 percentiles = ["p60"]
 ```
 In this way we avoid to compute all the other percentiles.
 
 
-## Retreive Logs
+## Application log retrieval
 
-Windows Webext Teams log Path:
+Webex application log path (Windows):
 ```
-C:\Users\{name_user}\AppData\Local\CiscoSpark\media\calls
+C:\Users\{username}\AppData\Local\CiscoSpark\media\calls
 ```
-WebRTC Chrome open the link before starting call:
+WebRTC application logs can be found in the browser (Chrome) at the following link:
 
 ```
 chrome://webrtc-internals/
 ```
-Before close the call press on
+Open the tab when you want to start capturing. Then before closing the call press on:
 ```
 create dump
 Download the PeerConnection updates and stats data
 ```
 
-## Plot
+## Plots
 
 Retina is able to produce in output different kind of plots, we can summarize them in 3 categories:
 - static
 - dyniamic
 - interactive
 
-In particular, when in Retina you use **-p** parameters, you then have to specify on of the three arguments written above.
-With **-p static** you receive in output a folder per each flow inside the pcap, in which is stored different **.png** pictures, desbring different stats of the flow. In particular you will have chart for:
-- bitrate
-- packet length
-- rtp timestamp
-- interarrival
+When using the **-p** plotting parameter, you have to specify on of the three arguments written above.
 
-If you specify instead **-p dynamic** you got the same as the static, but, in different **html** files for more responsive experience.
+##### Static plots
+With **-p static**  Retina creates a folder Plots and inside a folder per each flow inside the pcap, where it sores different figures in **.png** format, desbring different stats of the flow. If offers charts on bitrate, packet length, rtp timestamp, interarrival times.
 
-In the last case, that is **-p interactive** you got a **.pickle** file that you will upload on a dedicate dashboard that you can found at this link: https://share.streamlit.io/gianlucapolito/retina-dashboard/main/dashboard.py .
-The last case is strongly suggested if you are interested in analyze your traffic in a really cool and responsive way.
+##### Dynamic plots
+With **-p dynamic** you get the same kind of plots as with the static plotting, but in different **html** files which are responsive (can be zoomed in, flows can be selected/disselected etc.).
+
+##### Interactive plots
+With **-p interactive** you get a **.pickle** file that you can upload on a dedicated dashboard that can be found at this link: https://share.streamlit.io/gianlucapolito/retina-dashboard/main/dashboard.py .
+This is the recommended way to analyze the traffic.
