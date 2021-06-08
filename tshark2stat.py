@@ -95,7 +95,7 @@ def tshark_to_stat(dict_flow_data,
                 pass
 
         pcap_path = os.path.join(pcap_path, name)
-        with open(pcap_path + f"_{time_aggregation}s.csv", "w") as file:
+        with open(pcap_path + f"_{time_aggregation}ms.csv", "w") as file:
             dataset_dropped.to_csv(file, index=False)
         return dataset_dropped
 

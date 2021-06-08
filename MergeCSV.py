@@ -11,5 +11,5 @@ def merge_csv(directory, time_aggregation):
                 dataset_final = pd.concat([dataset_final, df_app], sort=False)
 
     dataset_final.reset_index(inplace=True, drop=True)
-    dataset_final.to_csv(os.path.join(directory, f"dataset_{time_aggregation}s.csv"))
+    dataset_final.to_csv(os.path.join(directory, f"dataset_{time_aggregation}ms.csv"))
     return dataset_final

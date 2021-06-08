@@ -47,7 +47,7 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=
             dict_flow_data_2[flow_id].reset_index(inplace=True, drop=False)
             new_header = [h[0] + "_" + h[1] if h[1] else h[0] for h in dict_flow_data_2[flow_id]]
             dict_flow_data_2[flow_id].columns = new_header
-        print(f"common time:{time.time() - start} pcap:{pcap}")
+        print(f"Time to calculate statistics:{time.time() - start} pcap:{pcap}")
 
 
     except Exception as e:

@@ -47,22 +47,23 @@ This is a `command line tool` with many functionalities controlled by arguments.
 
 Basic usage with one pcap file:
 ```
-python3 Retina.py -d test/webex/pcap1.pcap -so webex -log test/log/webex -ta 1000
+python3 Retina.py -d samples/webex/webex_sample.pcapng
+python3 Retina.py -d samples/webex/webex_sample.pcapng -log samples/webex -so webex -ta 1000
 ```
-where Retina.py is the *main* and the rest are arguments. We take the pcap file *test/webex/pcap1.pcap* and its corresponding log file (of the same name) from the folder *test/log/webex* and create a `.csv` file of statistics with a time aggregation of 1 second (1000ms).
-The name of the `.csv` file will be *pcap1_1000s.csv*
+where Retina.py is the *main* and the rest are arguments. We take the pcap file *samples/webex/webex_sample.pcapng* and its corresponding log file (of the same name) from the folder *samples/webex* and create a `.csv` file of statistics with a time aggregation of 1 second (1000ms).
+The name of the `.csv` file will be *pcap1_1000ms.csv*
 
 Basic usage with multiple pcap files in the same folder and of the same application:
 ```
-python3 Retina.py -d test/webex -so webex -log test/log/webex -ta 1000
+python3 Retina.py -d samples/webex -so webex -log samples/webex -ta 1000
 ```
-Say that we have two pcap files pcap1 and pcap2 in the folder *test/webex*. We give as input the directory *test/webex* and the directory of the application log files for the two pcaps (*test/log/webex*).
-The outputs will be `.csv` files with the `same name` of the pcaps. In this case Retina will output two files: pcap1_1000s.csv and pcap2_1000s.csv
+Say that we have two pcap files pcap1 and pcap2 in the folder *samples/webex*. We give as input the directory *samples/webex* and the directory of the application log files for the two pcaps (*samples/webex*).
+The outputs will be `.csv` files with the `same name` of the pcaps. In this case Retina will output two files: pcap1_1000ms.csv and pcap2_1000ms.csv
 
 
 To run the docker, use:
 ```
-docker run -v /Users/gianlucaperna/Desktop/Debug_webex:/Debug_webex retina -d /Debug_webex -log /Debug_webex -so webex -ta 2000
+docker run -v samples/webex:/Debug_webex retina -d /Debug_webex -log /Debug_webex -so webex -ta 2000
 ```
 where after -v you specify the folder to mount, then you specify all the parameters that are explained in the section [Arguments](#arguments).
 
@@ -246,11 +247,11 @@ Retina is able to produce in output different kind of plots, we can summarize th
 When using the **-p** plotting parameter, you have to specify on of the three arguments written above.
 
 ##### Static plots
-With **-p static**  Retina creates a folder Plots and inside a folder per each flow inside the pcap, where it sores different figures in **.png** format, desbring different stats of the flow. If offers charts on bitrate, packet length, rtp timestamp, interarrival times.
+With **-p static**  Retina creates a folder *<name_of_pcap>/Plots/* and inside a folder for each RTP flow found in the pcap, where it stores different figures in **.png** format, describing different stats of the flow. It offers charts on bitrate, packet length, RTP timestamp and interarrival times.
 
 ##### Dynamic plots
-With **-p dynamic** you get the same kind of plots as with the static plotting, but in different **html** files which are responsive (can be zoomed in, flows can be selected/disselected etc.).
+With **-p dynamic** you get the same kind of plots as with the static plotting, but in different **html** files which are responsive (can be zoomed in, flows can be selected/disselected etc.). They can be found in *<name_of_pcap>/Plots_html/*
 
 ##### Interactive plots
-With **-p interactive** you get a **.pickle** file that you can upload on a dedicated dashboard that can be found at this link: https://share.streamlit.io/gianlucapolito/retina-dashboard/main/dashboard.py .
+With **-p interactive** you get a **.pickle** file in the folder where the capture is. You can then upload this .pickle file on a dedicated dashboard that can be found at this link: https://share.streamlit.io/gianlucapolito/retina-dashboard/main/dashboard.py .
 This is the recommended way to analyze the traffic.
