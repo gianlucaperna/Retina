@@ -42,14 +42,62 @@ def webrtc_log_parse(log):
                     if stat_name in {"codecId", "[codec]"}:
                         values = json.loads(log["PeerConnections"][pc]["stats"][stat]["values"])
                         RTP_streams_short[obj][stat_name] = values[0]
-                    if stat_name in {"ssrc", "trackId", \
-                                     "frameWidth", "frameHeight", \
-                                     "kind", "jitterBufferDelay", \
-                                     "framesReceived", "framesSent", "jitter", "packetsLost" \
-                                                                               "fecPacketsReceived",
-                                     "fecPacketsDiscarded", \
-                                     "packetsReceived", "packetsSent", \
-                                     "totalSamplesReceived"}:
+                    if stat_name in {
+                                    "ssrc",
+                                    "trackId",
+                                    "kind",
+                                    "[codec]",
+                                    "nackCount",
+
+                                    # In Outbound stream or in both
+                                    "packetsSent",
+                                    "retransmittedPacketsSent",
+                                    "bytesSent",
+                                    "[bytesSent_in_bits/s]",
+                                    "framesEncoded",
+                                    "keyFramesEncoded",
+                                    "totalEncodeTime",
+                                    "[totalEncodeTime/framesEncoded_in_ms]",
+                                    "framesSent",
+                                    "hugeFramesSent",
+                                    "[framesSent/s]",
+                                    "totalPacketSendDelay",
+                                    "[totalPacketSendDelay/packetsSent_in_ms]",
+                                    "qualityLimitationResolutionChanges",
+                                    "qpSum",
+                                    "[qpSum/framesEncoded]",
+                                    "frameWidth",
+                                    "frameHeight",
+                                    "framesPerSecond",
+
+                                    # only in Inbound streams
+                                    "packetsLost",
+                                    "packetsReceived",
+                                    "bytesReceived",
+                                    "lastPacketReceivedTimestamp",
+                                    "jitter",
+                                    "framesReceived",
+                                    "[framesReceived-framesDecoded]",
+                                    "framesDecoded",
+                                    "keyFramesDecoded",
+                                    "framesDropped"
+                                    "totalDecodeTime",
+                                    "[totalDecodeTime/framesDecoded_in_ms]",
+                                    "totalInterFrameDelay",
+                                    "[totalInterFrameDelay/framesDecoded_in_ms]",
+
+                                    # Only audio
+                                    "jitterBufferDelay",
+                                    "fecPacketsReceived",
+                                    "fecPacketsDiscarded",
+
+                                    "concealedSamples",
+                                    "silentConcealedSamples",
+                                    "concealmentEvents",
+                                    "insertedSamplesForDeceleration",
+                                    "removedSamplesForAcceleration",
+                                     }:
+
                         values = json.loads(log["PeerConnections"][pc]["stats"][stat]["values"])
                         index = linspace(log["PeerConnections"][pc]["stats"][stat]["startTime"],
                                          log["PeerConnections"][pc]["stats"][stat]["endTime"],
@@ -77,11 +125,17 @@ def webrtc_log_parse(log):
                 #                    print(values)
 
                 if obj.startswith("RTCMediaStreamTrack_receiver_") or obj.startswith("RTCMediaStreamTrack_sender_"):
-                    if stat_name in {"jitterBufferDelay", \
-                                     "totalSamplesReceived", \
-                                     "concealmentEvents", \
-                                     "frameWidth", \
-                                     "frameHeight", \
+                    if stat_name in {
+                                    # "jitterBufferDelay", \
+                                    #  "totalSamplesReceived", \
+                                    #  "concealmentEvents", \
+                                    #  "frameWidth", \
+                                    #  "frameHeight", \
+                                    "freezeCount",
+                                    "pauseCount",
+                                    "totalFreezesDuration",
+                                    "totalPausesDuration",
+                                    "totalFramesDuration",
                                      }:
                         l_stats_tracks.append(stat_name)
                         values = json.loads(log["PeerConnections"][pc]["stats"][stat]["values"])
@@ -131,21 +185,21 @@ def webrtc_log_parse(log):
 
             if stream_to_track[key]:
                 track = stream_to_track[key]
-                if "concealmentEvents" in RTP_tracks[track].keys():
-                    value["concealmentEvents"] = RTP_tracks[track]["concealmentEvents"]
-                    value["concealment_diff"] = RTP_tracks[track]["concealmentEvents"].diff().fillna(-1).rename(
-                        "concealment_diff")
-                if "jitterBufferDelay" in RTP_tracks[track].keys() and "jitterBufferDelay" not in value.keys():
-                    value["jitterBufferDelay"] = RTP_tracks[track]["jitterBufferDelay"]
-                if "totalSamplesReceived" in RTP_tracks[track].keys() and "totalSamplesReceived" not in value.keys():
-                    value["totalSamplesReceived"] = RTP_tracks[track]["totalSamplesReceived"]
-                if "frameWidth" in RTP_tracks[track].keys():
-                    value["frameWidth2"] = RTP_tracks[track]["frameWidth"].rename("frameWidth2")
-                if "frameHeight" in RTP_tracks[track].keys():
-                    value["frameHeight2"] = RTP_tracks[track]["frameHeight"].rename("frameHeight2")
+                # if "concealmentEvents" in RTP_tracks[track].keys():
+                #     value["concealmentEvents"] = RTP_tracks[track]["concealmentEvents"]
+                #     value["concealment_diff"] = RTP_tracks[track]["concealmentEvents"].diff().fillna(-1).rename(
+                #         "concealment_diff")
+                # if "jitterBufferDelay" in RTP_tracks[track].keys() and "jitterBufferDelay" not in value.keys():
+                #     value["jitterBufferDelay"] = RTP_tracks[track]["jitterBufferDelay"]
+                # if "totalSamplesReceived" in RTP_tracks[track].keys() and "totalSamplesReceived" not in value.keys():
+                #     value["totalSamplesReceived"] = RTP_tracks[track]["totalSamplesReceived"]
+                # if "frameWidth" in RTP_tracks[track].keys():
+                #     value["frameWidth2"] = RTP_tracks[track]["frameWidth"].rename("frameWidth2")
+                # if "frameHeight" in RTP_tracks[track].keys():
+                #     value["frameHeight2"] = RTP_tracks[track]["frameHeight"].rename("frameHeight2")
 
-            if "jitterBufferDelay" in value.keys():
-                value["jitter2"] = value["jitterBufferDelay"].diff().fillna(0).rename("jitter2")
+            # if "jitterBufferDelay" in value.keys():
+            #     value["jitter2"] = value["jitterBufferDelay"].diff().fillna(0).rename("jitter2")
 
             # Aggregate per second for all series of that stream
             for inner_key, series in value.items():
@@ -220,14 +274,15 @@ def webrtc_log_df(dict_merge, pcap_name):
         }
 
         df_train = pd.DataFrame()
-        columns_drop = ['ssrc_hex', 'frameWidth2', 'frameHeight2', 'jitterBufferDelay',
-                        'direction', 'ssrc', 'kind', 'trackId', 'packetsReceived', 'fecPacketsDiscarded',
-                        'jitter', 'totalSamplesReceived', 'pps', 'codec', 'payloadType',
-                        'mimeType', 'clockRate', 'concealmentEvents', 'concealment_diff',
-                        'jitter2', 'framesReceived', 'packetsSent', 'framesSent',
-                        'fps']  # 'frameWidth', 'frameHeight', 'fps',
-        columns_drop = ['frameWidth2', 'frameHeight2', 'kind', 'trackId', 'ssrc_hex', 'payloadType', 'codec',
-                        ]
+        # columns_drop = ['ssrc_hex', 'frameWidth2', 'frameHeight2', 'jitterBufferDelay',
+        #                 'direction', 'ssrc', 'kind', 'trackId', 'packetsReceived', 'fecPacketsDiscarded',
+        #                 'jitter', 'totalSamplesReceived', 'pps', 'codec', 'payloadType',
+        #                 'mimeType', 'clockRate', 'concealmentEvents', 'concealment_diff',
+        #                 'jitter2', 'framesReceived', 'packetsSent', 'framesSent',
+        #                 'fps']  # 'frameWidth', 'frameHeight', 'fps',
+        # columns_drop = ['frameWidth2', 'frameHeight2', 'kind', 'trackId', 'ssrc_hex', 'payloadType', 'codec',
+        #                 ]
+        columns_drop = []
 
         for key in dict_merge.keys():
 

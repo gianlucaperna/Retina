@@ -20,9 +20,9 @@ def clean_pcap(tool, path_pcap):
     print("new_pcap_path", new_pcap_path)
     try:
         if tool == "msteams":
-            command = f"./pcap_cleaners/teams_pcap_cleaner {path_pcap} {new_pcap_path}"
+            command = f"./Pcap_cleaners/teams_pcap_cleaner {path_pcap} {new_pcap_path}"
         else:
-            command = f"./pcap_cleaners/zoom_pcap_cleaner {path_pcap} {new_pcap_path}"
+            command = f"./Pcap_cleaners/zoom_pcap_cleaner {path_pcap} {new_pcap_path}"
         output, e = subprocess.Popen(command, stdout=subprocess.PIPE, encoding='utf-8', errors="ignore",
                                      shell=True).communicate()
     except Exception as e:

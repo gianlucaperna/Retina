@@ -4,8 +4,8 @@
 from Label import label_by_length
 from Stats.InterStatistics import inter_statistic
 from Stats.SeriesStats import *
-from LogWebexManager import *
-from LogWebrtcManager import webrtc_log_parse, webrtc_log_df
+from App_log_managers.LogWebexManager import *
+from App_log_managers.LogWebrtcManager import webrtc_log_parse, webrtc_log_df
 from scipy.stats import kurtosis, skew
 import time
 import json
@@ -38,16 +38,20 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=
         for flow_id in dict_flow_data.keys():
             dict_flow_data[flow_id]["timestamps"] = pd.to_datetime(dict_flow_data[flow_id]["timestamps"], unit='s')
             dict_flow_data[flow_id].set_index('timestamps', inplace=True)
+
             dict_flow_data[flow_id] = dict_flow_data[flow_id].dropna()
+
             dict_flow_data_2[flow_id] = dict_flow_data[flow_id].resample(f"{time_aggregation}L").agg(config_dict_new)
             dict_flow_data_2[flow_id]["flow"] = str(flow_id)
             dict_flow_data_2[flow_id]["pcap"] = str(pcap)
+
 
         for flow_id in dict_flow_data_2.keys():
             dict_flow_data_2[flow_id].reset_index(inplace=True, drop=False)
             new_header = [h[0] + "_" + h[1] if h[1] else h[0] for h in dict_flow_data_2[flow_id]]
             dict_flow_data_2[flow_id].columns = new_header
         print(f"Time to calculate statistics:{time.time() - start} pcap:{pcap}")
+
 
 
     except Exception as e:
@@ -67,7 +71,9 @@ def OtherDataset(dict_flow_data, name, time_aggregation, threshold):
                                                   etichetto="label_by_length",
                                                   threshold=threshold)
 
+
         dataset_dropped = pd.concat([dict_flow_data_2[key] for key in dict_flow_data_2.keys()])
+
         dataset_dropped.dropna(inplace=True)
         dataset_dropped.reset_index(inplace=True, drop=True)
         return dataset_dropped
