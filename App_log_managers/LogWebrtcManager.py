@@ -80,7 +80,7 @@ def webrtc_log_parse(log):
                                     "[framesReceived-framesDecoded]",
                                     "framesDecoded",
                                     "keyFramesDecoded",
-                                    "framesDropped"
+                                    "framesDropped",
                                     "totalDecodeTime",
                                     "[totalDecodeTime/framesDecoded_in_ms]",
                                     "totalInterFrameDelay",
