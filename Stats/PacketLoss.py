@@ -89,7 +89,7 @@ def calculate_packet_loss(flow_data, time_aggregation):
         return df_temp['num_packet_loss'].values
     except Exception as e:
         print('Calculating the Number of packet loss: Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
-        raise NameError("WebexDataset error")
+        raise NameError("Packet loss calculation error")
 
 
 # the orignial simple method
