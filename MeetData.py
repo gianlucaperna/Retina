@@ -13,6 +13,7 @@ from collections import defaultdict
 
 from config import config_dict
 
+from Stats.PacketLoss import calculate_packet_loss
 
 def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=400, etichetto=None):
     try:
@@ -44,7 +45,8 @@ def common(dict_flow_data, time_aggregation, dict_params_stats, pcap, threshold=
             dict_flow_data_2[flow_id] = dict_flow_data[flow_id].resample(f"{time_aggregation}L").agg(config_dict_new)
             dict_flow_data_2[flow_id]["flow"] = str(flow_id)
             dict_flow_data_2[flow_id]["pcap"] = str(pcap)
-
+            
+            dict_flow_data_2[flow_id]['num_packet_loss'] = calculate_packet_loss(dict_flow_data[flow_id], time_aggregation)
 
         for flow_id in dict_flow_data_2.keys():
             dict_flow_data_2[flow_id].reset_index(inplace=True, drop=False)
